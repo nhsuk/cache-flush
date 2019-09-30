@@ -10,7 +10,9 @@
     "test-watch": "npm run test -- --watch --reporter min"
   },
   "author": "Steve Hunt",
-  "dependencies": {},
+  "dependencies": {
+    "edgegrid": "^3.0.8"
+  },
   "license": "MIT",
   "devDependencies": {
     "eslint": "^6.0.0",
