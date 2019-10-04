@@ -1,120 +1,98 @@
 const querystring = require('querystring');
 const util = require('util');
-// const URL = require('url');
 const EdgeGrid = require('edgegrid');
 
 module.exports = async function index(context, req) {
   context.log('JavaScript HTTP trigger function processed a request.');
 
   const maxChars = 50000;
-  let { environment, objects } = querystring.decode(req.body);
-  const objectsLength = objects.length + 'objects'.length + 1;
 
-  if (objectsLength > maxChars) {
-    const message = `A maximum of ${maxChars} characters in total can be submitted.`;
-    context.log.error('ERROR', message);
+  if (req.body.length > maxChars) {
+    const message = `Request can be no larger than ${maxChars} bytes.`;
+    context.log.error(message);
     return {
-      body: {
-        message,
-      },
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: { message },
+      headers: { 'Content-Type': 'application/json' },
       status: 413,
     };
   }
 
-  environment = environment || 'production';
+  const body = querystring.decode(req.body);
+  const objects = body.objects;
+
+  if (!objects) {
+    const message = 'Request must contain a populated \'objects\' value.';
+    context.log.error(message);
+    return {
+      body: { message },
+      headers: { 'Content-Type': 'application/json' },
+      status: 400,
+    };
+  }
+  const environment = body.environment || 'production';
 
   if (!['staging', 'production'].includes(environment)) {
     return {
       body: {
-        message: `${environment} is not a valid option for environment. It must be 'staging' or 'production'. If no option is submitted the 'production' environment will be used.`,
+        message: `'${environment}' is not a valid option for environment. It must be 'staging' or 'production' with 'production' being used if no environment is specified.`,
       },
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       status: 406,
     };
   }
 
-  const urls = objects.split('\n');
+  const urls = objects.split('\n').filter(Boolean).map((url) => url.trim());
+  const uniqueURLs = [...new Set(urls)];
   const unparseableURLs = [];
   const invalidURLs = [];
-  urls.forEach((url) => {
+  const validDomain = 'nhs.uk';
+
+  uniqueURLs.forEach((url) => {
     try {
       const parsedURL = new URL(url);
-      if (!parsedURL.host.endsWith('nhs.uk')) {
+      if (!parsedURL.host.endsWith(validDomain)) {
         invalidURLs.push(url);
       }
     } catch (err) {
       unparseableURLs.push(url);
-      context.log.error('ERROR', `${url} is not a valid URL.`);
-      console.log('BUSTED: ' + url);
-      console.log(err);
+      context.log.error(`${url} is not a valid URL.`);
     }
   });
 
   if (unparseableURLs.length) {
     return {
       body: {
-        message: 'Some URLs are invalid.',
+        message: 'Some URLs are invalid as they are not parseable into a valid URL.',
         urls: unparseableURLs,
       },
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       status: 406,
     };
   }
 
-  if (invalidURLs) {
+  if (invalidURLs.length) {
     return {
       body: {
-        message: 'Some URLs are invalid.',
+        message: `Some URLs are invalid as they are not for the domain '${validDomain}'.`,
         urls: invalidURLs,
       },
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       status: 403,
     };
   }
 
-  // TODO: Consider including all errors in the response (where it makes sense
-  // i.e. the status code would be the same)
-
-  // TODO: Need to test that objects are available
-  context.log(req.body);
-  context.log(environment);
-  context.log(objects);
-  return {
-    body: {
-      environment,
-      objects,
-    },
-  };
   const baseUri = process.env.host;
   const accessToken = process.env.access_token;
   const clientSecret = process.env.client_secret;
   const clientToken = process.env.client_token;
   const debug = true;
 
-  // TODO: Need to remove the empty entries
-  // TODO: Remove any whitespace at the start and end of each string
-  // console.log(urls);
-  // TODO: Add this information to the response
-  // console.log(urls.length);
-  // console.log('**************');
-
   const eg = new EdgeGrid(clientToken, clientSecret, accessToken, baseUri, debug);
   eg.auth({
     body: {
-      objects: urls,
+      objects: uniqueURLs,
     },
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     method: 'POST',
     path: `/ccu/v3/invalidate/url/${environment}`,
   });
@@ -124,14 +102,15 @@ module.exports = async function index(context, req) {
     context.log('Send request to Akamai');
     const response = await asyncSend();
     const data = JSON.parse(response.body);
+    data.urls = uniqueURLs;
     context.log(data);
     return {
       body: data,
-      headers: { 'Content-Type': 'application/JSON' },
+      headers: { 'Content-Type': 'application/json' },
       status: data.httpStatus,
     };
   } catch (err) {
-    context.log.error('ERROR', err);
+    context.log.error(err);
     return {
       body: {
         error: {
@@ -140,8 +119,12 @@ module.exports = async function index(context, req) {
         },
         message: 'An error has occurred during cache flush.',
       },
-      headers: { 'Content-Type': 'application/JSON' },
+      headers: { 'Content-Type': 'application/json' },
       status: 500,
     };
   }
 };
+
+// TODO: Consider what logging is needed
+// TODO: Refactor this file, remove response building duplication and put the
+// validation into functions
