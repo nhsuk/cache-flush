@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "A function app to flush items from Akamai's cache",
   "scripts": {
-    "git-hook": "npm run lint",
+    "git-hook": "npm run lint && npm run test",
     "lint": "eslint --ext .js,.json .",
     "test": "nyc mocha --exit --recursive test",
     "test-ci": "nyc --reporter=html --reporter=cobertura mocha --exit --recursive test --reporter mocha-junit-reporter",

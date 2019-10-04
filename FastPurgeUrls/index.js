@@ -85,6 +85,7 @@ module.exports = async function index(context, req) {
   const accessToken = process.env.access_token;
   const clientSecret = process.env.client_secret;
   const clientToken = process.env.client_token;
+  // TODO allow debug to be set
   const debug = true;
 
   const eg = new EdgeGrid(clientToken, clientSecret, accessToken, baseUri, debug);
