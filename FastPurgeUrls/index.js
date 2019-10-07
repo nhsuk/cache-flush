@@ -1,27 +1,13 @@
-const querystring = require('querystring');
 const util = require('util');
 const EdgeGrid = require('edgegrid');
+const { validEnvironments } = require('../lib/constants');
 
 module.exports = async function index(context, req) {
   context.log('JavaScript HTTP trigger function processed a request.');
 
-  const maxChars = 50000;
-
-  if (req.body.length > maxChars) {
-    const message = `Request can be no larger than ${maxChars} bytes.`;
-    context.log.error(message);
-    return {
-      body: { message },
-      headers: { 'Content-Type': 'application/json' },
-      status: 413,
-    };
-  }
-
-  const body = querystring.decode(req.body);
-  const objects = body.objects;
-
-  if (!objects) {
-    const message = 'Request must contain a populated \'objects\' value.';
+  const { debug, environment, objects } = req.body;
+  if (!environment || !objects || objects.length === 0 || typeof (objects) !== 'object') {
+    const message = 'Request must contain required properties: \'environment\', \'objects\'.';
     context.log.error(message);
     return {
       body: { message },
@@ -29,9 +15,8 @@ module.exports = async function index(context, req) {
       status: 400,
     };
   }
-  const environment = body.environment || 'production';
 
-  if (!['staging', 'production'].includes(environment)) {
+  if (!validEnvironments.includes(environment)) {
     return {
       body: {
         message: `'${environment}' is not a valid option for environment. It must be 'staging' or 'production' with 'production' being used if no environment is specified.`,
@@ -41,7 +26,7 @@ module.exports = async function index(context, req) {
     };
   }
 
-  const urls = objects.split('\n').filter(Boolean).map((url) => url.trim());
+  const urls = objects.filter(Boolean).map((url) => url.trim());
   const uniqueURLs = [...new Set(urls)];
   const unparseableURLs = [];
   const invalidURLs = [];
@@ -85,10 +70,8 @@ module.exports = async function index(context, req) {
   const accessToken = process.env.access_token;
   const clientSecret = process.env.client_secret;
   const clientToken = process.env.client_token;
-  // TODO allow debug to be set
-  const debug = true;
 
-  const eg = new EdgeGrid(clientToken, clientSecret, accessToken, baseUri, debug);
+  const eg = new EdgeGrid(clientToken, clientSecret, accessToken, baseUri, !!debug);
   eg.auth({
     body: {
       objects: uniqueURLs,

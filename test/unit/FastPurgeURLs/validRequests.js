@@ -1,7 +1,7 @@
 const chai = require('chai');
-const querystring = require('querystring');
 
 const fastPurgeUrls = require('../../../FastPurgeUrls/index');
+const { validEnvironments } = require('../../../lib/constants');
 const { akamaiResponse, assertResponse } = require('../../helpers/expecations');
 const { setUpNock } = require('../../helpers/setUpNock');
 const {
@@ -38,64 +38,35 @@ describe('FastPurgeUrls', () => {
 
   describe('valid requests', () => {
     const validURL = 'https://not.real.nhs.uk/test/page/';
+    const validEnv = validEnvironments[0];
 
     describe('basic functionality', () => {
-      it('should allow a request body upto 50000 characters', async () => {
-        const body = { objects: `${validURL}${'a'.repeat(49946)}` };
-        const req = { body: querystring.encode(body) };
-        const expectedResponse = { ...akamaiResponse };
-        expectedResponse.urls = [body.objects];
-
-        setUpNock([body.objects]);
-
-        const res = await fastPurgeUrls(fakeCtx, req);
-
-        assertResponse(res, 201);
-        expect(res.body).to.deep.equal(expectedResponse);
-      });
-
       it('should return a list of URLs that have been requested to be invalidated in the cache', async () => {
         const expectedResponse = { ...akamaiResponse };
         expectedResponse.urls = [validURL];
-        const body = { objects: validURL };
-        const req = { body: querystring.encode(body) };
+        const body = { environment: validEnv, objects: [validURL] };
 
-        setUpNock([validURL]);
+        setUpNock(validEnv, [validURL]);
 
-        const res = await fastPurgeUrls(fakeCtx, req);
-
-        assertResponse(res, 201);
-        expect(res.body).to.deep.equal(expectedResponse);
-      });
-
-      it('should allow the environment to be overridden by the request', async () => {
-        const expectedResponse = { ...akamaiResponse };
-        expectedResponse.urls = [validURL];
-        const environment = 'staging';
-        const body = { environment, objects: validURL };
-        const req = { body: querystring.encode(body) };
-
-        setUpNock([validURL], environment);
-
-        const res = await fastPurgeUrls(fakeCtx, req);
+        const res = await fastPurgeUrls(fakeCtx, { body });
 
         assertResponse(res, 201);
         expect(res.body).to.deep.equal(expectedResponse);
       });
 
-      it('should allow an environment in the request of \'production\'', async () => {
-        const expectedResponse = { ...akamaiResponse };
-        expectedResponse.urls = [validURL];
-        const environment = 'production';
-        const body = { environment, objects: validURL };
-        const req = { body: querystring.encode(body) };
+      validEnvironments.forEach((envTestValue) => {
+        it(`should allow the environment to be set to one of the valid options. Testing '${envTestValue}'.`, async () => {
+          const expectedResponse = { ...akamaiResponse };
+          expectedResponse.urls = [validURL];
+          const body = { environment: envTestValue, objects: [validURL] };
 
-        setUpNock([validURL]);
+          setUpNock(envTestValue, [validURL]);
 
-        const res = await fastPurgeUrls(fakeCtx, req);
+          const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 201);
-        expect(res.body).to.deep.equal(expectedResponse);
+          assertResponse(res, 201);
+          expect(res.body).to.deep.equal(expectedResponse);
+        });
       });
     });
 
@@ -104,12 +75,11 @@ describe('FastPurgeUrls', () => {
         const anotherValidURL = `${validURL}another/`;
         const expectedResponse = { ...akamaiResponse };
         expectedResponse.urls = [validURL, anotherValidURL];
-        const body = { objects: `${validURL}     \n     ${anotherValidURL}` };
-        const req = { body: querystring.encode(body) };
+        const body = { environment: validEnv, objects: [`${validURL}     `, `     ${anotherValidURL}`] };
 
-        setUpNock([validURL, anotherValidURL]);
+        setUpNock(validEnv, [validURL, anotherValidURL]);
 
-        const res = await fastPurgeUrls(fakeCtx, req);
+        const res = await fastPurgeUrls(fakeCtx, { body });
 
         assertResponse(res, 201);
         expect(res.body).to.deep.equal(expectedResponse);
@@ -118,12 +88,11 @@ describe('FastPurgeUrls', () => {
       it('should remove any duplicate URLs', async () => {
         const expectedResponse = { ...akamaiResponse };
         expectedResponse.urls = [validURL];
-        const body = { objects: `${validURL}\n${validURL}` };
-        const req = { body: querystring.encode(body) };
+        const body = { environment: validEnv, objects: [validURL, validURL] };
 
-        setUpNock([validURL]);
+        setUpNock(validEnv, [validURL]);
 
-        const res = await fastPurgeUrls(fakeCtx, req);
+        const res = await fastPurgeUrls(fakeCtx, { body });
 
         assertResponse(res, 201);
         expect(res.body).to.deep.equal(expectedResponse);
@@ -132,12 +101,11 @@ describe('FastPurgeUrls', () => {
       it('should remove any blank lines submitted', async () => {
         const expectedResponse = { ...akamaiResponse };
         expectedResponse.urls = [validURL];
-        const body = { objects: `\n${validURL}\n` };
-        const req = { body: querystring.encode(body) };
+        const body = { environment: validEnv, objects: ['', validURL, ''] };
 
-        setUpNock([validURL]);
+        setUpNock(validEnv, [validURL]);
 
-        const res = await fastPurgeUrls(fakeCtx, req);
+        const res = await fastPurgeUrls(fakeCtx, { body });
 
         assertResponse(res, 201);
         expect(res.body).to.deep.equal(expectedResponse);
