@@ -1,6 +1,7 @@
 const chai = require('chai');
 const fastPurgeUrls = require('../../../FastPurgeUrls/index');
 const { assertResponse, assertSingleURLInRepsonse } = require('../../helpers/expecations');
+const { validEnvironments } = require('../../../lib/constants');
 
 const expect = chai.expect;
 
@@ -8,9 +9,7 @@ describe('FastPurgeUrls', () => {
   let fakeCtx;
 
   before('set up environment', () => {
-    fakeCtx = {
-      log: () => {},
-    };
+    fakeCtx = { log: () => {} };
     fakeCtx.log.error = () => {};
   });
 
@@ -70,7 +69,7 @@ describe('FastPurgeUrls', () => {
       const res = await fastPurgeUrls(fakeCtx, { body });
 
       assertResponse(res, 406);
-      expect(res.body.message).to.equal(`'${notWhitelistedEnv}' is not a valid option for environment. It must be 'staging' or 'production' with 'production' being used if no environment is specified.`);
+      expect(res.body.message).to.equal(`'${notWhitelistedEnv}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`);
     });
 
     it('should return status code 406 when a single, invalid URL submitted', async () => {

@@ -19,7 +19,7 @@ module.exports = async function index(context, req) {
   if (!validEnvironments.includes(environment)) {
     return {
       body: {
-        message: `'${environment}' is not a valid option for environment. It must be 'staging' or 'production' with 'production' being used if no environment is specified.`,
+        message: `'${environment}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`,
       },
       headers: { 'Content-Type': 'application/json' },
       status: 406,
@@ -112,3 +112,5 @@ module.exports = async function index(context, req) {
 // TODO: Consider what logging is needed
 // TODO: Refactor this file, remove response building duplication and put the
 // validation into functions
+//
+// TODO: Add test for error response from API

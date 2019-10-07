@@ -15,16 +15,15 @@ describe('FastPurgeUrls', () => {
   let fakeCtx;
 
   before('set up environment', () => {
+    fakeCtx = { log: () => {} };
+    fakeCtx.log.error = () => {};
+
     process.env = {
       access_token,
       client_secret,
       client_token,
       host,
     };
-    fakeCtx = {
-      log: () => {},
-    };
-    fakeCtx.log.error = () => {};
   });
 
   after('reset environment', () => {
