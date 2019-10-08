@@ -7,20 +7,24 @@ module.exports = async function index(context, req) {
 
   const { debug, environment, objects } = req.body;
   if (!environment || !objects || objects.length === 0 || typeof (objects) !== 'object') {
-    const message = 'Request must contain required properties: \'environment\', \'objects\'.';
-    context.log.error(message);
+    const body = {
+      message: 'Request must contain required properties: \'environment\', \'objects\'.',
+    };
+    context.log.error(body);
     return {
-      body: { message },
+      body,
       headers: { 'Content-Type': 'application/json' },
       status: 400,
     };
   }
 
   if (!validEnvironments.includes(environment)) {
+    const body = {
+      message: `'${environment}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`,
+    };
+    context.log.error(body);
     return {
-      body: {
-        message: `'${environment}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`,
-      },
+      body,
       headers: { 'Content-Type': 'application/json' },
       status: 406,
     };
@@ -40,27 +44,31 @@ module.exports = async function index(context, req) {
       }
     } catch (err) {
       unparseableURLs.push(url);
-      context.log.error(`${url} is not a valid URL.`);
     }
   });
 
   if (unparseableURLs.length) {
+    const body = {
+      message: 'Some URLs are invalid as they are not parseable into a valid URL.',
+      urls: unparseableURLs,
+    };
+    context.log.error(body);
     return {
-      body: {
-        message: 'Some URLs are invalid as they are not parseable into a valid URL.',
-        urls: unparseableURLs,
-      },
+      body,
       headers: { 'Content-Type': 'application/json' },
       status: 406,
     };
   }
 
   if (invalidURLs.length) {
+    const body = {
+      message: `Some URLs are invalid as they are not for the domain '${validDomain}'.`,
+      urls: invalidURLs,
+    };
+
+    context.log.error(body);
     return {
-      body: {
-        message: `Some URLs are invalid as they are not for the domain '${validDomain}'.`,
-        urls: invalidURLs,
-      },
+      body,
       headers: { 'Content-Type': 'application/json' },
       status: 403,
     };
@@ -112,5 +120,3 @@ module.exports = async function index(context, req) {
 // TODO: Consider what logging is needed
 // TODO: Refactor this file, remove response building duplication and put the
 // validation into functions
-//
-// TODO: Add test for error response from API
