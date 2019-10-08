@@ -1,7 +1,7 @@
-const util = require('util');
-const EdgeGrid = require('edgegrid');
-const { buildResponse } = require('../lib/responseBuilder');
-const { validEnvironments } = require('../lib/constants');
+const { buildResponse } = require('../lib/buildResponse');
+const { validDomain, validEnvironments } = require('../lib/constants');
+const { createAkamaiRequest } = require('../lib/createAkamaiRequest');
+const { processURLs } = require('../lib/processURLs');
 const { isEnvironmentValid, isMandatoryInputIncluded } = require('../lib/validateRequest');
 
 module.exports = async function index(context, req) {
@@ -24,22 +24,7 @@ module.exports = async function index(context, req) {
     return buildResponse(body, 406);
   }
 
-  const urls = objects.filter(Boolean).map((url) => url.trim());
-  const uniqueURLs = [...new Set(urls)];
-  const unparseableURLs = [];
-  const invalidURLs = [];
-  const validDomain = 'nhs.uk';
-
-  uniqueURLs.forEach((url) => {
-    try {
-      const parsedURL = new URL(url);
-      if (!parsedURL.host.endsWith(validDomain)) {
-        invalidURLs.push(url);
-      }
-    } catch (err) {
-      unparseableURLs.push(url);
-    }
-  });
+  const { invalidURLs, uniqueURLs, unparseableURLs } = processURLs(objects);
 
   if (unparseableURLs.length) {
     const body = {
@@ -60,25 +45,11 @@ module.exports = async function index(context, req) {
     return buildResponse(body, 403);
   }
 
-  const baseUri = process.env.host;
-  const accessToken = process.env.access_token;
-  const clientSecret = process.env.client_secret;
-  const clientToken = process.env.client_token;
+  const akamaiRequest = createAkamaiRequest(uniqueURLs, environment, debug);
 
-  const eg = new EdgeGrid(clientToken, clientSecret, accessToken, baseUri, !!debug);
-  eg.auth({
-    body: {
-      objects: uniqueURLs,
-    },
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST',
-    path: `/ccu/v3/invalidate/url/${environment}`,
-  });
-
-  const asyncSend = util.promisify(eg.send.bind(eg));
   try {
     context.log('Request sent to Akamai.');
-    const response = await asyncSend();
+    const response = await akamaiRequest();
     const data = JSON.parse(response.body);
     data.urls = uniqueURLs;
     context.log(data);
@@ -95,5 +66,3 @@ module.exports = async function index(context, req) {
     return buildResponse(body, 500);
   }
 };
-// TODO: Refactor this file, remove response building duplication and put the
-// validation into functions

@@ -1,7 +1,8 @@
 const chai = require('chai');
+
 const fastPurgeUrls = require('../../../FastPurgeUrls/index');
-const { expectLoggingErrorValid, expectResponseValidWithMessage, expectSingleURLInRepsonse } = require('../../helpers/expecations');
 const { validEnvironments } = require('../../../lib/constants');
+const { expectLoggingErrorValid, expectResponseValidWithMessage, expectSingleURLInRepsonse } = require('../../helpers/expecations');
 const { setUpNockError } = require('../../helpers/setUpNock');
 const {
   // eslint-disable-next-line camelcase
