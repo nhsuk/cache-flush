@@ -1,60 +1,61 @@
 openapi: 3.0.0
-# Added by API Auto Mocking Plugin
-servers:
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/st3v3nhunt/FastPurgeUrls/1.0.0
 info:
-  description: Invalidate URLs from Akamai's cache using the Fast Purge API
-  version: "0.1.0"
   title: Fast Purge URLs
+  description: Invalidate URLs from Akamai's cache using the Fast Purge API
   license:
     name: MIT
-    url: 'https://github.com/nhsuk/cache-flush/blob/master/LICENSE.md'
+    url: https://github.com/nhsuk/cache-flush/blob/master/LICENSE.md
+  version: 0.1.0
+servers:
+- url: https://api.nhs.uk/
+  description: Production server, requires API key
 paths:
-  /api/FastPurgeUrls:
+  /utils/cache-flush:
     post:
       summary: Invalidate a set of URLs from Akamai's cache
+      description: Request a set of URLs to be invalidated for the given environment
+        from Akamai's cache using Fast Purge API
       operationId: FastPurgeURLs
-      description: Request a set of URLs to be invalidated for the given environment from Akamai's cache using Fast Purge API
       requestBody:
         description: Set of URLs to invalidate in the given environment
-        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/FastPurgeRequest'
+        required: true
       responses:
-        '201':
+        201:
           description: Request accepted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/201Response'
-        '400':
+        400:
           description: Object invalid
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/400Response'
-        '403':
+        403:
           description: URL contains a domain not under our control
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Response'
-        '406':
+        406:
           description: Unparseable URLs
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/406Response'
-        '422':
-          description: The 'environment' specified was not on the list of allowable values
+        422:
+          description: The 'environment' specified was not on the list of allowable
+            values
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/422Response'
-        '500':
+        500:
           description: Error occurred during request to Akamai
           content:
             application/json:
@@ -64,109 +65,124 @@ components:
   schemas:
     FastPurgeRequest:
       required:
-      - objects
       - environment
+      - objects
       type: object
       properties:
         objects:
-          description: The set of URLs to be invalidated from cache
           type: array
+          description: The set of URLs to be invalidated from cache
+          example:
+          - https://sub.domain.nhs.uk/cached/page/path
+          - http://nhs.uk/another/cached/resource.ext
           items:
             type: string
-          example: ['https://sub.domain.nhs.uk/cached/page/path', 'http://nhs.uk/another/cached/resource.ext']
         environment:
           type: string
-          description: Akamai environment against which the purge operation should execute
-          enum: ['staging', 'production']
-          example: 'production'
+          description: Akamai environment against which the purge operation should
+            execute
+          example: production
+          enum:
+          - staging
+          - production
         debug:
           type: boolean
+          description: A boolean flag indicating if the request should include debug
+            information. Useful for debugging
           default: false
-          description: A boolean flag indicating if the request should include debug information. Useful for debugging
     201Response:
       type: object
       properties:
         detail:
           type: string
-          example: 'Request accepted'
           description: Additional detail on the response
+          example: Request accepted
         estimatedSeconds:
           type: integer
-          example: 5
           description: The estimated number of seconds the request will take to complete
+          example: 5
         httpStatus:
           type: integer
-          example: 201
           description: The http status code of the response from Akamai
+          example: 201
         purgeID:
           type: string
-          example: 'e535071c-26b2-11e7-94d7-276f2f54d938'
           description: Akamai purge id
+          example: e535071c-26b2-11e7-94d7-276f2f54d938
         supportId:
           type: string
-          example: '17PY1492793544958045-219026624'
           description: Akamai support id
+          example: 17PY1492793544958045-219026624
         urls:
           type: array
+          description: The set of URLs the request was made for
+          example:
+          - https://sub.domain.nhs.uk/cached/page/path
+          - http://nhs.uk/another/cached/resource.ext
           items:
             type: string
-          example:  ['https://sub.domain.nhs.uk/cached/page/path', 'http://nhs.uk/another/cached/resource.ext']
-          description: The set of URLs the request was made for
     400Response:
       type: object
       properties:
         message:
           type: string
-          example: "Request must contain required properties: 'environment', 'objects'."
           description: Informative message about why the request was rejected
+          example: 'Request must contain required properties: ''environment'', ''objects''.'
     403Response:
       type: object
       properties:
         message:
           type: string
-          example: "Some URLs can not be flushed from cache as they are not for the domain 'nhs.uk'."
           description: Informative message about why the request was rejected
+          example: Some URLs can not be flushed from cache as they are not for the
+            domain 'nhs.uk'.
         urls:
           type: array
+          description: The set of URLs that do not match the allowed domain
+          example:
+          - https://not.nhs.uk.domain/cached/page/path
           items:
             type: string
-          example:  ['https://not.nhs.uk.domain/cached/page/path']
-          description: The set of URLs that do not match the allowed domain
     406Response:
       type: object
       properties:
         message:
           type: string
-          example: "Some URLs are invalid as they are not parseable into a valid URL."
           description: Informative message about why the request was rejected
+          example: Some URLs are invalid as they are not parseable into a valid URL.
         urls:
           type: array
+          description: The set of URLs that were unable to be parsed into a valid
+            URL
+          example:
+          - not.a.valid.url
           items:
             type: string
-          example:  ['not.a.valid.url']
-          description: The set of URLs that were unable to be parsed into a valid URL
     422Response:
       type: object
       properties:
         message:
           type: string
-          example: "'unknown' environment is not a valid option for environment. It must be one of: 'staging', 'production'."
           description: Informative message about why the request was rejected
+          example: '''unknown'' environment is not a valid option for environment.
+            It must be one of: ''staging'', ''production''.'
     500Response:
       type: object
       properties:
         message:
           type: string
-          example: "An error has occurred during cache flush."
           description: Informative message about why the request was rejected
+          example: An error has occurred during cache flush.
         error:
-          type: object
-          properties:
-            message:
-              type: string
-              example: "SyntaxError: Unexpected token a in JSON at position 0"
-              description: The error message
-            name:
-              type: string
-              example: 'SyntaxError'
-              description: The name of the error
+          $ref: '#/components/schemas/500Response_error'
+    500Response_error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The error message
+          example: 'SyntaxError: Unexpected token a in JSON at position 0'
+        name:
+          type: string
+          description: The name of the error
+          example: SyntaxError
