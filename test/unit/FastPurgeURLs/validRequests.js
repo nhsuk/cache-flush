@@ -1,21 +1,18 @@
-const chai = require('chai');
-
 const fastPurgeUrls = require('../../../FastPurgeUrls/index');
 const { validEnvironments } = require('../../../lib/constants');
-const { akamaiResponse, assertResponse } = require('../../helpers/expecations');
+const { akamaiResponse, expectLoggingValid, expectResponseValidWithBody } = require('../../helpers/expecations');
 const { setUpNock } = require('../../helpers/setUpNock');
 const {
   // eslint-disable-next-line camelcase
   access_token, client_secret, client_token, host,
 } = require('../../../example.local.settings').Values;
 
-const expect = chai.expect;
-
 describe('FastPurgeUrls', () => {
   let fakeCtx;
+  let messages = [];
 
   before('set up environment', () => {
-    fakeCtx = { log: () => {} };
+    fakeCtx = { log: (m) => { messages.push(m); } };
     fakeCtx.log.error = () => {};
 
     process.env = {
@@ -24,6 +21,10 @@ describe('FastPurgeUrls', () => {
       client_token,
       host,
     };
+  });
+
+  beforeEach('reset logger objects', () => {
+    messages = [];
   });
 
   after('reset environment', () => {
@@ -49,8 +50,8 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 201);
-        expect(res.body).to.deep.equal(expectedResponse);
+        expectResponseValidWithBody(res, 201, expectedResponse);
+        expectLoggingValid(messages, expectedResponse);
       });
 
       validEnvironments.forEach((envTestValue) => {
@@ -63,8 +64,8 @@ describe('FastPurgeUrls', () => {
 
           const res = await fastPurgeUrls(fakeCtx, { body });
 
-          assertResponse(res, 201);
-          expect(res.body).to.deep.equal(expectedResponse);
+          expectResponseValidWithBody(res, 201, expectedResponse);
+          expectLoggingValid(messages, expectedResponse);
         });
       });
     });
@@ -80,8 +81,8 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 201);
-        expect(res.body).to.deep.equal(expectedResponse);
+        expectResponseValidWithBody(res, 201, expectedResponse);
+        expectLoggingValid(messages, expectedResponse);
       });
 
       it('should remove any duplicate URLs', async () => {
@@ -93,8 +94,8 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 201);
-        expect(res.body).to.deep.equal(expectedResponse);
+        expectResponseValidWithBody(res, 201, expectedResponse);
+        expectLoggingValid(messages, expectedResponse);
       });
 
       it('should remove any blank lines submitted', async () => {
@@ -106,8 +107,8 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 201);
-        expect(res.body).to.deep.equal(expectedResponse);
+        expectResponseValidWithBody(res, 201, expectedResponse);
+        expectLoggingValid(messages, expectedResponse);
       });
     });
   });

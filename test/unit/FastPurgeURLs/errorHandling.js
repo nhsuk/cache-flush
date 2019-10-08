@@ -1,6 +1,6 @@
 const chai = require('chai');
 const fastPurgeUrls = require('../../../FastPurgeUrls/index');
-const { assertResponse, assertSingleURLInRepsonse } = require('../../helpers/expecations');
+const { expectLoggingErrorValid, expectResponseValidWithMessage, expectSingleURLInRepsonse } = require('../../helpers/expecations');
 const { validEnvironments } = require('../../../lib/constants');
 const { setUpNockError } = require('../../helpers/setUpNock');
 const {
@@ -13,11 +13,11 @@ const expect = chai.expect;
 describe('FastPurgeUrls', () => {
   let err;
   let fakeCtx;
-  let logErrorCount;
+  let logCount;
 
   before('set up environment', () => {
     fakeCtx = { log: () => {} };
-    fakeCtx.log.error = (e) => { err = e; logErrorCount += 1; };
+    fakeCtx.log.error = (e) => { err = e; logCount += 1; };
 
     process.env = {
       access_token,
@@ -29,7 +29,7 @@ describe('FastPurgeUrls', () => {
 
   beforeEach('reset logger objects', () => {
     err = {};
-    logErrorCount = 0;
+    logCount = 0;
   });
 
   after('reset environment', () => {
@@ -54,10 +54,8 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, body);
 
-        assertResponse(res, 400);
-        expect(logErrorCount).to.equal(1);
-        expect(err).to.deep.equal(res.body);
-        expect(res.body.message).to.equal(missingInputMessage);
+        expectResponseValidWithMessage(res, 400, missingInputMessage);
+        expectLoggingErrorValid(err, logCount, res);
       });
 
       it('should return status code 400 if the request does not include a property for \'environment\'.', async () => {
@@ -65,10 +63,8 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, body);
 
-        assertResponse(res, 400);
-        expect(logErrorCount).to.equal(1);
-        expect(err).to.deep.equal(res.body);
-        expect(res.body.message).to.equal(missingInputMessage);
+        expectResponseValidWithMessage(res, 400, missingInputMessage);
+        expectLoggingErrorValid(err, logCount, res);
       });
 
       [[], null, undefined, '', validURL].forEach((testValue) => {
@@ -77,10 +73,8 @@ describe('FastPurgeUrls', () => {
 
           const res = await fastPurgeUrls(fakeCtx, body);
 
-          assertResponse(res, 400);
-          expect(logErrorCount).to.equal(1);
-          expect(err).to.deep.equal(res.body);
-          expect(res.body.message).to.equal(missingInputMessage);
+          expectResponseValidWithMessage(res, 400, missingInputMessage);
+          expectLoggingErrorValid(err, logCount, res);
         });
       });
 
@@ -90,10 +84,8 @@ describe('FastPurgeUrls', () => {
 
           const res = await fastPurgeUrls(fakeCtx, body);
 
-          assertResponse(res, 400);
-          expect(logErrorCount).to.equal(1);
-          expect(err).to.deep.equal(res.body);
-          expect(res.body.message).to.equal(missingInputMessage);
+          expectResponseValidWithMessage(res, 400, missingInputMessage);
+          expectLoggingErrorValid(err, logCount, res);
         });
       });
     });
@@ -105,10 +97,8 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 406);
-        expect(logErrorCount).to.equal(1);
-        expect(err).to.deep.equal(res.body);
-        expect(res.body.message).to.equal(`'${notWhitelistedEnv}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`);
+        expectResponseValidWithMessage(res, 406, `'${notWhitelistedEnv}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`);
+        expectLoggingErrorValid(err, logCount, res);
       });
     });
 
@@ -118,11 +108,9 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 406);
-        expect(logErrorCount).to.equal(1);
-        expect(err).to.deep.equal(res.body);
-        expect(res.body.message).to.equal('Some URLs are invalid as they are not parseable into a valid URL.');
-        assertSingleURLInRepsonse(res, unparseableURL);
+        expectResponseValidWithMessage(res, 406, 'Some URLs are invalid as they are not parseable into a valid URL.');
+        expectLoggingErrorValid(err, logCount, res);
+        expectSingleURLInRepsonse(res, unparseableURL);
       });
 
       it('should return status code 406 when a single, invalid URL is submitted along with valid URLs', async () => {
@@ -130,9 +118,9 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 406);
-        expect(res.body.message).to.equal('Some URLs are invalid as they are not parseable into a valid URL.');
-        assertSingleURLInRepsonse(res, unparseableURL);
+        expectResponseValidWithMessage(res, 406, 'Some URLs are invalid as they are not parseable into a valid URL.');
+        expectLoggingErrorValid(err, logCount, res);
+        expectSingleURLInRepsonse(res, unparseableURL);
       });
 
       it('should return status code 403 when a URL does not end in \'nhs.uk\'', async () => {
@@ -141,11 +129,9 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 403);
-        expect(logErrorCount).to.equal(1);
-        expect(err).to.deep.equal(res.body);
-        expect(res.body.message).to.equal('Some URLs are invalid as they are not for the domain \'nhs.uk\'.');
-        assertSingleURLInRepsonse(res, invalidURL);
+        expectResponseValidWithMessage(res, 403, 'Some URLs are invalid as they are not for the domain \'nhs.uk\'.');
+        expectLoggingErrorValid(err, logCount, res);
+        expectSingleURLInRepsonse(res, invalidURL);
       });
     });
 
@@ -157,9 +143,8 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        assertResponse(res, 500);
-        expect(logErrorCount).to.equal(1);
-        expect(res.body.message).to.equal('An error has occurred during cache flush.');
+        expectResponseValidWithMessage(res, 500, 'An error has occurred during cache flush.');
+        expect(logCount).to.equal(1);
       });
     });
   });

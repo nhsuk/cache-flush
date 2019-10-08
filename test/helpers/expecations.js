@@ -10,14 +10,36 @@ const akamaiResponse = {
   supportId: 'xxxxxxxxxxxxxxxxxxxx-xxxxxxxxx',
 };
 
-function assertResponse(res, status) {
+function expectResponseValid(res, status) {
   expect(res.status).to.equal(status);
   expect(res.body).is.not.be.null;
   expect(res.headers).is.not.be.null;
   expect(res.headers).have.property('Content-Type', 'application/json');
 }
 
-function assertSingleURLInRepsonse(res, url) {
+function expectResponseValidWithBody(res, status, expectedResponse) {
+  expectResponseValid(res, status);
+  expect(res.body).to.deep.equal(expectedResponse);
+}
+
+function expectResponseValidWithMessage(res, status, msg) {
+  expectResponseValid(res, status);
+  expect(res.body.message).to.equal(msg);
+}
+
+function expectLoggingValid(messages, expectedResponse) {
+  expect(messages.length).to.equal(3);
+  expect(messages[0]).to.equal('Cache flush function started.');
+  expect(messages[1]).to.equal('Request sent to Akamai.');
+  expect(messages[2]).to.deep.equal(expectedResponse);
+}
+
+function expectLoggingErrorValid(err, logCount, res) {
+  expect(logCount).to.equal(1);
+  expect(err).to.deep.equal(res.body);
+}
+
+function expectSingleURLInRepsonse(res, url) {
   expect(res.body.urls).to.be.an('array');
   expect(res.body.urls).to.have.lengthOf(1);
   expect(res.body.urls).to.include(url);
@@ -25,6 +47,10 @@ function assertSingleURLInRepsonse(res, url) {
 
 module.exports = {
   akamaiResponse,
-  assertResponse,
-  assertSingleURLInRepsonse,
+  expectLoggingErrorValid,
+  expectLoggingValid,
+  expectResponseValid,
+  expectResponseValidWithBody,
+  expectResponseValidWithMessage,
+  expectSingleURLInRepsonse,
 };

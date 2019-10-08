@@ -3,7 +3,7 @@ const EdgeGrid = require('edgegrid');
 const { validEnvironments } = require('../lib/constants');
 
 module.exports = async function index(context, req) {
-  context.log('JavaScript HTTP trigger function processed a request.');
+  context.log('Cache flush function started.');
 
   const { debug, environment, objects } = req.body;
   if (!environment || !objects || objects.length === 0 || typeof (objects) !== 'object') {
@@ -91,7 +91,7 @@ module.exports = async function index(context, req) {
 
   const asyncSend = util.promisify(eg.send.bind(eg));
   try {
-    context.log('Send request to Akamai');
+    context.log('Request sent to Akamai.');
     const response = await asyncSend();
     const data = JSON.parse(response.body);
     data.urls = uniqueURLs;
