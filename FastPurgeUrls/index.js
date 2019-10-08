@@ -22,7 +22,7 @@ module.exports = async function index(context, req) {
       message: `'${environment}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`,
     };
     context.log.error(body);
-    return buildResponse(body, 406);
+    return buildResponse(body, 422);
   }
 
   const { invalidURLs, uniqueURLs, unparseableURLs } = processURLs(objects);
@@ -38,7 +38,7 @@ module.exports = async function index(context, req) {
 
   if (invalidURLs.length) {
     const body = {
-      message: `Some URLs are invalid as they are not for the domain '${validDomain}'.`,
+      message: `Some URLs can not be flushed from cache as they are not for the domain '${validDomain}'.`,
       urls: invalidURLs,
     };
 

@@ -100,7 +100,7 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        expectResponseValidWithMessage(res, 406, `'${notWhitelistedEnv}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`);
+        expectResponseValidWithMessage(res, 422, `'${notWhitelistedEnv}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`);
         expectLoggingErrorValid(err, logCount, res);
       });
     });
@@ -132,7 +132,7 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        expectResponseValidWithMessage(res, 403, 'Some URLs are invalid as they are not for the domain \'nhs.uk\'.');
+        expectResponseValidWithMessage(res, 403, 'Some URLs can not be flushed from cache as they are not for the domain \'nhs.uk\'.');
         expectLoggingErrorValid(err, logCount, res);
         expectSingleURLInRepsonse(res, invalidURL);
       });
