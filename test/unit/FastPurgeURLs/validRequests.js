@@ -2,10 +2,12 @@ const fastPurgeUrls = require('../../../FastPurgeUrls/index');
 const { validEnvironments } = require('../../../lib/constants');
 const { akamaiResponse, expectLoggingValid, expectResponseValidWithBody } = require('../../helpers/expecations');
 const { setUpNock } = require('../../helpers/setUpNock');
+const { Values } = require('../../../example.local.settings');
+
 const {
   // eslint-disable-next-line camelcase
   access_token, client_secret, client_token, host,
-} = require('../../../example.local.settings').Values;
+} = Values;
 
 describe('FastPurgeUrls', () => {
   let fakeCtx;
@@ -38,7 +40,7 @@ describe('FastPurgeUrls', () => {
 
   describe('valid requests', () => {
     const validURL = 'https://not.real.nhs.uk/test/page/';
-    const validEnv = validEnvironments[0];
+    const [validEnv] = validEnvironments;
 
     describe('basic functionality', () => {
       it('should return a list of URLs that have been requested to be invalidated in the cache', async () => {

@@ -4,12 +4,14 @@ const fastPurgeUrls = require('../../../FastPurgeUrls/index');
 const { validEnvironments } = require('../../../lib/constants');
 const { expectLoggingErrorValid, expectResponseValidWithMessage, expectSingleURLInRepsonse } = require('../../helpers/expecations');
 const { setUpNockError } = require('../../helpers/setUpNock');
+const { Values } = require('../../../example.local.settings');
+
 const {
   // eslint-disable-next-line camelcase
   access_token, client_secret, client_token, host,
-} = require('../../../example.local.settings').Values;
+} = Values;
 
-const expect = chai.expect;
+const { expect } = chai;
 
 describe('FastPurgeUrls', () => {
   let err;

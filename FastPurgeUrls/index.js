@@ -7,7 +7,8 @@ const { isEnvironmentValid, isMandatoryInputIncluded } = require('../lib/validat
 module.exports = async function index(context, req) {
   context.log('Cache flush function started.');
 
-  const { debug, environment, objects } = req.body;
+  const { body: reqBody } = req;
+  const { debug, environment, objects } = reqBody;
   if (!isMandatoryInputIncluded(environment, objects)) {
     const body = {
       message: 'Request must contain required properties: \'environment\', \'objects\'.',

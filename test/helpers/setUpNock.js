@@ -1,7 +1,9 @@
 const nock = require('nock');
 
 const { akamaiResponse } = require('./expecations');
-const { host } = require('../../example.local.settings').Values;
+const { Values } = require('../../example.local.settings');
+
+const { host } = Values;
 
 function setUpNock(env, urls) {
   nock(`https://${host}:443`, { encodedQueryParams: true })
