@@ -1,33 +1,27 @@
 const util = require('util');
 const EdgeGrid = require('edgegrid');
+const { buildResponse } = require('../lib/responseBuilder');
 const { validEnvironments } = require('../lib/constants');
+const { isEnvironmentValid, isMandatoryInputIncluded } = require('../lib/validateRequest');
 
 module.exports = async function index(context, req) {
   context.log('Cache flush function started.');
 
   const { debug, environment, objects } = req.body;
-  if (!environment || !objects || objects.length === 0 || typeof (objects) !== 'object') {
+  if (!isMandatoryInputIncluded(environment, objects)) {
     const body = {
       message: 'Request must contain required properties: \'environment\', \'objects\'.',
     };
     context.log.error(body);
-    return {
-      body,
-      headers: { 'Content-Type': 'application/json' },
-      status: 400,
-    };
+    return buildResponse(body, 400);
   }
 
-  if (!validEnvironments.includes(environment)) {
+  if (!isEnvironmentValid(environment)) {
     const body = {
       message: `'${environment}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`,
     };
     context.log.error(body);
-    return {
-      body,
-      headers: { 'Content-Type': 'application/json' },
-      status: 406,
-    };
+    return buildResponse(body, 406);
   }
 
   const urls = objects.filter(Boolean).map((url) => url.trim());
@@ -53,11 +47,7 @@ module.exports = async function index(context, req) {
       urls: unparseableURLs,
     };
     context.log.error(body);
-    return {
-      body,
-      headers: { 'Content-Type': 'application/json' },
-      status: 406,
-    };
+    return buildResponse(body, 406);
   }
 
   if (invalidURLs.length) {
@@ -67,11 +57,7 @@ module.exports = async function index(context, req) {
     };
 
     context.log.error(body);
-    return {
-      body,
-      headers: { 'Content-Type': 'application/json' },
-      status: 403,
-    };
+    return buildResponse(body, 403);
   }
 
   const baseUri = process.env.host;
@@ -96,27 +82,18 @@ module.exports = async function index(context, req) {
     const data = JSON.parse(response.body);
     data.urls = uniqueURLs;
     context.log(data);
-    return {
-      body: data,
-      headers: { 'Content-Type': 'application/json' },
-      status: data.httpStatus,
-    };
+    return buildResponse(data, data.httpStatus);
   } catch (err) {
     context.log.error(err);
-    return {
-      body: {
-        error: {
-          message: err.message,
-          name: err.name,
-        },
-        message: 'An error has occurred during cache flush.',
+    const body = {
+      error: {
+        message: err.message,
+        name: err.name,
       },
-      headers: { 'Content-Type': 'application/json' },
-      status: 500,
+      message: 'An error has occurred during cache flush.',
     };
+    return buildResponse(body, 500);
   }
 };
-
-// TODO: Consider what logging is needed
 // TODO: Refactor this file, remove response building duplication and put the
 // validation into functions
