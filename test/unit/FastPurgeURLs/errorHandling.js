@@ -2,7 +2,7 @@ const chai = require('chai');
 
 const fastPurgeUrls = require('../../../FastPurgeUrls/index');
 const { validEnvironments } = require('../../../lib/constants');
-const { expectLoggingErrorValid, expectResponseValidWithMessage, expectSingleURLInRepsonse } = require('../../helpers/expecations');
+const { expectLoggingErrorValid, expectResponseValidWithMessage, expectSingleURLInRepsonse } = require('../../helpers/expectations');
 const { setUpNockError } = require('../../helpers/setUpNock');
 const { Values } = require('../../../example.local.settings');
 

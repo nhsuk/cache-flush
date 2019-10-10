@@ -1,6 +1,6 @@
 const fastPurgeUrls = require('../../../FastPurgeUrls/index');
 const { validEnvironments } = require('../../../lib/constants');
-const { akamaiResponse, expectLoggingValid, expectResponseValidWithBody } = require('../../helpers/expecations');
+const { akamaiResponse, expectLoggingValid, expectResponseValidWithBody } = require('../../helpers/expectations');
 const { setUpNock } = require('../../helpers/setUpNock');
 const { Values } = require('../../../example.local.settings');
 

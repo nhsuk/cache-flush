@@ -1,6 +1,6 @@
 const nock = require('nock');
 
-const { akamaiResponse } = require('./expecations');
+const { akamaiResponse } = require('./expectations');
 const { Values } = require('../../example.local.settings');
 
 const { host } = Values;
