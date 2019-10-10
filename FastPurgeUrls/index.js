@@ -1,4 +1,4 @@
-const { buildResponse } = require('../lib/buildResponse');
+const { buildResponseAndLog } = require('../lib/buildResponse');
 const { validDomain, validEnvironments } = require('../lib/constants');
 const { createAkamaiRequest } = require('../lib/createAkamaiRequest');
 const { processURLs } = require('../lib/processURLs');
@@ -13,16 +13,14 @@ module.exports = async function index(context, req) {
     const body = {
       message: 'Request must contain required properties: \'environment\', \'objects\'.',
     };
-    context.log.error(body);
-    return buildResponse(body, 400);
+    return buildResponseAndLog(body, 400, context.log.error);
   }
 
   if (!isEnvironmentValid(environment)) {
     const body = {
       message: `'${environment}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`,
     };
-    context.log.error(body);
-    return buildResponse(body, 400);
+    return buildResponseAndLog(body, 400, context.log.error);
   }
 
   const { invalidURLs, uniqueURLs, unparseableURLs } = processURLs(objects);
@@ -32,8 +30,7 @@ module.exports = async function index(context, req) {
       message: 'Some URLs are invalid as they are not parseable into a valid URL.',
       urls: unparseableURLs,
     };
-    context.log.error(body);
-    return buildResponse(body, 400);
+    return buildResponseAndLog(body, 400, context.log.error);
   }
 
   if (invalidURLs.length) {
@@ -41,9 +38,7 @@ module.exports = async function index(context, req) {
       message: `Some URLs can not be flushed from cache as they are not for the domain '${validDomain}'.`,
       urls: invalidURLs,
     };
-
-    context.log.error(body);
-    return buildResponse(body, 403);
+    return buildResponseAndLog(body, 403, context.log.error);
   }
 
   const akamaiRequest = createAkamaiRequest(uniqueURLs, environment, debug);
@@ -53,10 +48,8 @@ module.exports = async function index(context, req) {
     const response = await akamaiRequest();
     const data = JSON.parse(response.body);
     data.urls = uniqueURLs;
-    context.log(data);
-    return buildResponse(data, data.httpStatus);
+    return buildResponseAndLog(data, data.httpStatus, context.log);
   } catch (err) {
-    context.log.error(err);
     const body = {
       error: {
         message: err.message,
@@ -64,6 +57,6 @@ module.exports = async function index(context, req) {
       },
       message: 'An error has occurred during cache flush.',
     };
-    return buildResponse(body, 500);
+    return buildResponseAndLog(body, 500, context.log.error);
   }
 };
