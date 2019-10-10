@@ -1,8 +1,8 @@
-const { buildResponseAndLog } = require('../lib/buildResponse');
+const { createAkamaiRequest } = require('../lib/akamaiRequestBuilder');
 const { validDomain, validEnvironments } = require('../lib/constants');
-const { createAkamaiRequest } = require('../lib/createAkamaiRequest');
-const { processURLs } = require('../lib/processURLs');
-const { isEnvironmentValid, isMandatoryInputIncluded } = require('../lib/validateRequest');
+const { isEnvironmentValid, isMandatoryInputIncluded } = require('../lib/requestValidator');
+const { buildResponseAndLog } = require('../lib/responseBuilder');
+const { processURLs } = require('../lib/urlProcessor');
 
 module.exports = async function index(context, req) {
   context.log('Cache flush function started.');
