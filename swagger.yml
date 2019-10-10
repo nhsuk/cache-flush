@@ -35,26 +35,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/400Response'
+                oneOf:
+                  - $ref: '#/components/schemas/MissingPropertiesResponse'
+                  - $ref: '#/components/schemas/InvalidEnvironmentResponse'
+                  - $ref: '#/components/schemas/InvalidObjectsResponse'
         403:
           description: URL contains a domain not under our control
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/403Response'
-        406:
-          description: Unparseable URLs
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/406Response'
-        422:
-          description: The 'environment' specified was not on the list of allowable
-            values
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/422Response'
         500:
           description: Error occurred during request to Akamai
           content:
@@ -121,7 +111,7 @@ components:
           - http://nhs.uk/another/cached/resource.ext
           items:
             type: string
-    400Response:
+    MissingPropertiesResponse:
       type: object
       properties:
         message:
@@ -143,7 +133,7 @@ components:
           - https://not.nhs.uk.domain/cached/page/path
           items:
             type: string
-    406Response:
+    InvalidObjectsResponse:
       type: object
       properties:
         message:
@@ -158,7 +148,7 @@ components:
           - not.a.valid.url
           items:
             type: string
-    422Response:
+    InvalidEnvironmentResponse:
       type: object
       properties:
         message:

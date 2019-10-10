@@ -22,7 +22,7 @@ module.exports = async function index(context, req) {
       message: `'${environment}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`,
     };
     context.log.error(body);
-    return buildResponse(body, 422);
+    return buildResponse(body, 400);
   }
 
   const { invalidURLs, uniqueURLs, unparseableURLs } = processURLs(objects);
@@ -33,7 +33,7 @@ module.exports = async function index(context, req) {
       urls: unparseableURLs,
     };
     context.log.error(body);
-    return buildResponse(body, 406);
+    return buildResponse(body, 400);
   }
 
   if (invalidURLs.length) {

@@ -100,7 +100,7 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        expectResponseValidWithMessage(res, 422, `'${notWhitelistedEnv}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`);
+        expectResponseValidWithMessage(res, 400, `'${notWhitelistedEnv}' is not a valid option for environment. It must be one of: ${validEnvironments.join(', ')}.`);
         expectLoggingErrorValid(err, logCount, res);
       });
     });
@@ -111,7 +111,7 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        expectResponseValidWithMessage(res, 406, 'Some URLs are invalid as they are not parseable into a valid URL.');
+        expectResponseValidWithMessage(res, 400, 'Some URLs are invalid as they are not parseable into a valid URL.');
         expectLoggingErrorValid(err, logCount, res);
         expectSingleURLInRepsonse(res, unparseableURL);
       });
@@ -121,7 +121,7 @@ describe('FastPurgeUrls', () => {
 
         const res = await fastPurgeUrls(fakeCtx, { body });
 
-        expectResponseValidWithMessage(res, 406, 'Some URLs are invalid as they are not parseable into a valid URL.');
+        expectResponseValidWithMessage(res, 400, 'Some URLs are invalid as they are not parseable into a valid URL.');
         expectLoggingErrorValid(err, logCount, res);
         expectSingleURLInRepsonse(res, unparseableURL);
       });
