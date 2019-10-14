@@ -6,8 +6,8 @@
     "git-hook": "npm run lint && npm run test",
     "lint": "eslint --ext .js,.json .",
     "test": "nyc --nycrc-path=.nycrc.json mocha --exit --recursive test",
-    "test-ci": "nyc --nycrc-path=.nycrc.json --reporter=html --reporter=cobertura mocha --exit --recursive test --reporter mocha-junit-reporter",
-    "test-watch": "npm run test -- --watch --reporter min"
+    "test-watch": "npm run test -- --watch --reporter min",
+    "test-with-coverage": "nyc --nycrc-path=.nycrc.json --reporter=html --reporter=cobertura mocha --exit --recursive test --reporter mocha-junit-reporter"
   },
   "author": "Steve Hunt",
   "dependencies": {
