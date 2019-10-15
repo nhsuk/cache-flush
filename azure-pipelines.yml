@@ -68,15 +68,37 @@ stages:
     pool:
       vmImage: 'Ubuntu 16.04'
     variables:
-      RELEASE_ENVIRONMENTNAME: 'dev'
+      APP_NAME: 'nhsuk-cache-flush-func-dev-uks-PR-$(system.pullRequest.pullRequestNumber)'
+      # APP_PLAN: '$(APP_PLAN)'
+      LOCATION: 'UK South'
+      RESOURCE_GROUP: '$(RESOURCE_GROUP_DEV)'
     steps:
-    - bash: |
-        echo $(System.pullRequest.pullRequestNumber)
-        echo $(system.pullRequest.pullRequestNumber)
-        echo '**************'
-        echo 'nhsuk-cache-flush-func-dev-uks-PR-$(System.pullRequest.pullRequestNumber)'
-    - task: AzureFunctionApp@1
+    - task: ExtractFiles@1
+      displayName: 'Extract files '
+      inputs:
+        destinationFolder: '$(System.DefaultWorkingDirectory)/extract'
+    - task: AzureResourceGroupDeployment@2
+      displayName: 'Azure Deployment:Create Or Update Resource Group action on $(RESOURCE_GROUP)'
       inputs:
         azureSubscription: 'Development'
-        appType: 'functionApp'
-        appName: 'nhsuk-cache-flush-func-dev-uks-PR-$(System.pullRequest.pullRequestNumber)'
+        resourceGroupName: '$(RESOURCE_GROUP)'
+        location: '$(LOCATION)'
+        csmFile: '$(System.DefaultWorkingDirectory)/extract/AzureResourceGroup/AzureDeploy.json'
+        overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
+    - task: Bash@3
+      displayName: 'Get variables from Vault'
+      inputs:
+        targetType: filePath
+        filePath: './$(System.DefaultWorkingDirectory)/extract/scripts/get-variables-from-vault.sh'
+    - task: AzureRmWebAppDeployment@4
+      displayName: 'Azure App Service Deploy: Review app'
+      inputs:
+        azureSubscription: 'Development'
+        appType: functionApp
+        WebAppName: '$(APP_NAME)'
+        AppSettings: '-access_token "$(access_token)" -client_secret "$(client_secret)" -client_token "$(client_token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
+    - task: Bash@3
+      displayName: 'Test app is running'
+      inputs:
+        targetType: filePath
+        filePath: './$(System.DefaultWorkingDirectory)/extract/scripts/test-app-is-running.sh'
