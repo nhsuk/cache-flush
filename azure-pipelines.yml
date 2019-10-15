@@ -15,6 +15,9 @@ pr:
     include:
     - '*'
 
+variables:
+  ARTIFACT_NAME: drop
+
 stages:
 - stage: build
   jobs:
@@ -55,7 +58,7 @@ stages:
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifacts'
       inputs:
-        artifactName: 'drop'
+        artifactName: $(ARTIFACT_NAME)
         pathtoPublish: '$(System.DefaultWorkingDirectory)/$(Build.BuildId).zip'
 
 - stage: deployReviewEnvironment
@@ -73,32 +76,44 @@ stages:
       LOCATION: 'UK South'
       RESOURCE_GROUP: '$(RESOURCE_GROUP_DEV)'
     steps:
-    - task: ExtractFiles@1
-      displayName: 'Extract files '
-      inputs:
-        destinationFolder: '$(System.DefaultWorkingDirectory)/extract'
+    # - task: DownloadPipelineArtifact@2
+    #   displayName: 'Download .zip from build stage'
+    #   inputs:
+    #     artifactName: $(ARTIFACT_NAME)
+    #     targetPath: $(System.DefaultWorkingDirectory)/$(ARTIFACT_NAME)
+    # - task: ExtractFiles@1
+    #   displayName: 'Extract files'
+    #   inputs:
+    #     cleanDestinationFolder: false
+    - bash: |
+        echo '*********************DEBUG OUPUT...'
+        echo $(RESOURCE_GROUP)
+        echo $(APP_NAME)
+        echo $(LOCATION)
+        echo '*********************DEBUG OUTPUT...DONE'
+      displayName: 'some debug output'
     - task: AzureResourceGroupDeployment@2
-      displayName: 'Azure Deployment:Create Or Update Resource Group action on $(RESOURCE_GROUP)'
+      displayName: 'Azure Deployment: Create Or Update Resource Group ($(RESOURCE_GROUP))'
       inputs:
-        azureSubscription: 'Development'
-        resourceGroupName: '$(RESOURCE_GROUP)'
-        location: '$(LOCATION)'
-        csmFile: '$(System.DefaultWorkingDirectory)/extract/AzureResourceGroup/AzureDeploy.json'
+        azureSubscription: Development
+        resourceGroupName: $(RESOURCE_GROUP)
+        location: $(LOCATION)
+        csmFile: $(System.DefaultWorkingDirectory)/AzureResourceGroup/AzureDeploy.json
         overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
     - task: Bash@3
       displayName: 'Get variables from Vault'
       inputs:
         targetType: filePath
-        filePath: './$(System.DefaultWorkingDirectory)/extract/scripts/get-variables-from-vault.sh'
+        filePath: './$(System.DefaultWorkingDirectory)/scripts/get-variables-from-vault.sh'
     - task: AzureRmWebAppDeployment@4
       displayName: 'Azure App Service Deploy: Review app'
       inputs:
-        azureSubscription: 'Development'
+        azureSubscription: Development
         appType: functionApp
-        WebAppName: '$(APP_NAME)'
+        WebAppName: $(APP_NAME)
         AppSettings: '-access_token "$(access_token)" -client_secret "$(client_secret)" -client_token "$(client_token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
     - task: Bash@3
       displayName: 'Test app is running'
       inputs:
         targetType: filePath
-        filePath: './$(System.DefaultWorkingDirectory)/extract/scripts/test-app-is-running.sh'
+        filePath: './$(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh'
