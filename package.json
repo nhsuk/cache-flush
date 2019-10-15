@@ -3,22 +3,26 @@
   "version": "0.1.0",
   "description": "A function app to flush items from Akamai's cache",
   "scripts": {
-    "git-hook": "npm run lint",
+    "git-hook": "npm run lint && npm run test",
     "lint": "eslint --ext .js,.json .",
-    "test": "nyc mocha --exit --recursive test",
-    "test-ci": "nyc --reporter=html --reporter=cobertura mocha --exit --recursive test --reporter mocha-junit-reporter",
+    "test": "nyc --nycrc-path=.nycrc.json mocha --exit --recursive test",
+    "test-ci": "nyc --nycrc-path=.nycrc.json --reporter=html --reporter=cobertura mocha --exit --recursive test --reporter mocha-junit-reporter",
     "test-watch": "npm run test -- --watch --reporter min"
   },
   "author": "Steve Hunt",
-  "dependencies": {},
+  "dependencies": {
+    "edgegrid": "^3.0.8"
+  },
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^6.0.0",
+    "chai": "^4.2.0",
+    "eslint": "^6.5.1",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-config-nhsuk": "^0.21.0",
-    "husky": "^3.0.0",
-    "mocha": "^6.0.0",
+    "eslint-config-nhsuk": "^1.0.0",
+    "husky": "^3.0.8",
+    "mocha": "^6.2.1",
     "mocha-junit-reporter": "^1.0.0",
+    "nock": "^11.4.0",
     "nyc": "^14.0.0"
   },
   "husky": {
