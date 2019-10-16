@@ -83,15 +83,6 @@ stages:
       displayName: 'Get variables from Vault'
       env:
         VAULT_TOKEN: $(VAULT_TOKEN)
-    - bash: |
-        echo '*********************DEBUG OUPUT...'
-        echo 'RESOURCE_GROUP: $(RESOURCE_GROUP)'
-        echo 'APP_NAME: $(APP_NAME)'
-        echo 'APP_PLAN: $(APP_PLAN)'
-        echo 'LOCATION: $(LOCATION)'
-        echo 'host: $(host)'
-        echo '*********************DEBUG OUTPUT...DONE'
-      displayName: 'some debug output'
     - task: AzureResourceGroupDeployment@2
       displayName: 'Create Or Update Resource Group'
       inputs:
