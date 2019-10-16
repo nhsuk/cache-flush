@@ -113,4 +113,4 @@ stages:
         $(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh
       displayName: 'Test app is running'
       env:
-        APP_SERVICE_URL: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
+        APP_SERVICE_HOST: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)

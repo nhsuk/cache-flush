@@ -43,7 +43,7 @@ if [ "$RELEASE_ENVIRONMENTNAME" == "review" ]; then
 fi
 
 # CHECK PROJECT NAME EXISTS
-# Within Vault this is the name of the secret (or application) e.g. nhsuk.apim-blue-green-deploy
+# Within Vault this is the name of the secret (or application) e.g. nhsuk.cache-flush
 # The name of the build pipeline
 if [ -z "$BUILD_DEFINITIONNAME" ]; then
   echo "BUILD_DEFINITIONNAME not set, skipping environment config"
