@@ -4,6 +4,7 @@ csx
 .vs
 edge
 Publish
+func-app-response.json
 
 *.user
 *.suo
