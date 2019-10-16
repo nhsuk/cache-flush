@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$APP_SERVICE_HOST" ]; then
-  echo "APP_SERVICE_HOST is not set, unable to continue. Exiting with failure."
+  echo "APP_SERVICE_HOST is not set, unable to continue."
   exit 1
 fi
 
@@ -12,7 +12,7 @@ echo "Going to make request to function app: '$APP_SERVICE_URL'. "
 
 RES_OUT=func-app-response.json
 
-curl -sS -o "$RES_OUT" -XPOST "$APP_SERVICE_URL" -H "Content-Type: application/json" -d "@./scripts/test-payload.json"
+curl -sS -o "$RES_OUT" -XPOST "$APP_SERVICE_URL?code=$FUNCTION_KEY" -H "Content-Type: application/json" -d "@./scripts/resources/test-payload.json"
 HTTP_STATUS=$(jq '.httpStatus' $RES_OUT)
 echo "Got status '$HTTP_STATUS' from the response body of the request made to the function app."
 

@@ -3,10 +3,10 @@
 get_vault_data() {
   VAULT_PATH="$1"
 
-  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "X-Vault-Token: ${VAULT_TOKEN}" -X GET "https://${VAULT_SERVER}${VAULT_PATH}")
+  HTTP_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -H "X-Vault-Token: ${VAULT_TOKEN}" -X GET "https://${VAULT_SERVER}${VAULT_PATH}")
   echo "Retrieving variables from path: '${VAULT_PATH}'. Got status: '${HTTP_STATUS}'."
   if [ "$HTTP_STATUS" = "200" ]; then
-    DATA=$( curl -s  \
+    DATA=$( curl -sS  \
         -H "X-Vault-Token: ${VAULT_TOKEN}" \
         -X GET \
         "https://${VAULT_SERVER}${VAULT_PATH}" \
