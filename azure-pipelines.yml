@@ -72,24 +72,19 @@ stages:
       vmImage: 'Ubuntu 16.04'
     variables:
       APP_NAME: 'nhsuk-cache-flush-func-dev-uks-PR-$(system.pullRequest.pullRequestNumber)'
-      # APP_PLAN: '$(APP_PLAN)'
-      LOCATION: 'UK South'
-      RESOURCE_GROUP: '$(RESOURCE_GROUP_DEV)'
+      RELEASE_ENVIRONMENTNAME: 'dev'
     steps:
-    # - task: DownloadPipelineArtifact@2
-    #   displayName: 'Download .zip from build stage'
-    #   inputs:
-    #     artifactName: $(ARTIFACT_NAME)
-    #     targetPath: $(System.DefaultWorkingDirectory)/$(ARTIFACT_NAME)
-    # - task: ExtractFiles@1
-    #   displayName: 'Extract files'
-    #   inputs:
-    #     cleanDestinationFolder: false
+    - bash: ./scripts/get-variables-from-vault.sh
+      displayName: 'Get variables from Vault'
+      env:
+        VAULT_TOKEN: $(VAULT_TOKEN)
     - bash: |
         echo '*********************DEBUG OUPUT...'
-        echo $(RESOURCE_GROUP)
-        echo $(APP_NAME)
-        echo $(LOCATION)
+        echo 'RESOURCE_GROUP: $(RESOURCE_GROUP)'
+        echo 'APP_NAME: $(APP_NAME)'
+        echo 'APP_PLAN: $(APP_PLAN)'
+        echo 'LOCATION: $(LOCATION)'
+        echo 'host: $(host)'
         echo '*********************DEBUG OUTPUT...DONE'
       displayName: 'some debug output'
     - task: AzureResourceGroupDeployment@2
@@ -100,11 +95,6 @@ stages:
         location: $(LOCATION)
         csmFile: $(System.DefaultWorkingDirectory)/AzureResourceGroup/AzureDeploy.json
         overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
-    - task: Bash@3
-      displayName: 'Get variables from Vault'
-      inputs:
-        targetType: filePath
-        filePath: './$(System.DefaultWorkingDirectory)/scripts/get-variables-from-vault.sh'
     - task: AzureRmWebAppDeployment@4
       displayName: 'Azure App Service Deploy: Review app'
       inputs:
@@ -116,4 +106,4 @@ stages:
       displayName: 'Test app is running'
       inputs:
         targetType: filePath
-        filePath: './$(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh'
+        filePath: ./scripts/test-app-is-running.sh
