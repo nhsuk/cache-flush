@@ -99,9 +99,7 @@ stages:
         appType: functionApp
         azureSubscription: Development
         package: $(ARTIFACT_PATH)/*.zip
-    - bash: |
-        env
-        $(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh
+    - bash: $(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh
       displayName: 'Test app is running'
       env:
         APP_SERVICE_HOST: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
