@@ -42,13 +42,13 @@ stages:
     - task: PublishCodeCoverageResults@1
       inputs:
         codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
         reportDirectory: '$(System.DefaultWorkingDirectory)/coverage'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
     - task: PublishTestResults@2
       condition: succeededOrFailed()
       inputs:
-        testRunner: JUnit
         testResultsFiles: '$(System.DefaultWorkingDirectory)/test-results.xml'
+        testRunner: JUnit
     - task: ArchiveFiles@2
       displayName: 'Archive Function App'
       inputs:
@@ -96,17 +96,21 @@ stages:
       displayName: 'Create Or Update Resource Group'
       inputs:
         azureSubscription: Development
-        resourceGroupName: $(RESOURCE_GROUP)
-        location: $(LOCATION)
         csmFile: $(System.DefaultWorkingDirectory)/AzureResourceGroup/AzureDeploy.json
+        location: $(LOCATION)
         overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
+        resourceGroupName: $(RESOURCE_GROUP)
     - task: AzureFunctionApp@1
       displayName: 'Deploy function app'
       inputs:
-        azureSubscription: Development
-        appType: functionApp
         appName: $(APP_NAME)
         appSettings: '-access_token "$(access_token)" -client_secret "$(client_secret)" -client_token "$(client_token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
+        appType: functionApp
+        azureSubscription: Development
         package: $(ARTIFACT_PATH)/*.zip
-    - bash: $(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh
+    - bash: |
+        env
+        $(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh
       displayName: 'Test app is running'
+      env:
+        APP_SERVICE_URL: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
