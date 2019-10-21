@@ -16,13 +16,15 @@ curl -sS -o "$RESPONSE" -XPOST "$APP_SERVICE_URL?code=$FUNCTION_KEY" -H "Content
 HTTP_STATUS=$(jq '.httpStatus' $RESPONSE)
 echo "Got status '$HTTP_STATUS' from the response body of the request made to the function app."
 
-# httpStatus (HTTP_STATUS) should be 400. This is the status code from the
-# response from the request the function app has made to the Akamai API.  Due
-# to the request body having no URLs to purge the request should have been
-# rejected as a bad request.
-if [ "$HTTP_STATUS" != "400" ]; then
-  echo "HTTP Status code was not 400. Please confirm the function app has been deployed successfully."
+# httpStatus (HTTP_STATUS) should be 403. This is the status code returned from
+# Akamai's API. Recieving a 403 means the function app has been deployed and is
+# communicating with Akamai, but the payload contains a URL that is not 'owned'
+# by NHS.UK so the response comes back as unauthorized..
+if [ "$HTTP_STATUS" = "403" ]; then
+  echo "HTTP Status code was 403. The function app has been deployed successfully and is able to communicate with Akamai."
+else
+  echo "HTTP Status code was not 403. Please confirm the function app has been deployed successfully."
   echo "The response was:"
-  jq '' $RESPONSE
+  echo $RESPONSE
   exit 1
 fi
