@@ -148,6 +148,7 @@ stages:
       displayName: 'Test app is running'
       env:
         APP_SERVICE_HOST: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
+        FUNCTION_KEY: $(FUNCTION_KEY)
 
 - stage: deployStagingEnvironment
   displayName: 'Deploy to Staging Environment'
@@ -193,6 +194,7 @@ stages:
       displayName: 'Test app is running'
       env:
         APP_SERVICE_HOST: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
+        FUNCTION_KEY: $(FUNCTION_KEY)
 
 - stage: deployProductionEnvironment
   displayName: 'Deploy to Production Environment'
@@ -238,3 +240,4 @@ stages:
       displayName: 'Test app is running'
       env:
         APP_SERVICE_HOST: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
+        FUNCTION_KEY: $(FUNCTION_KEY)
