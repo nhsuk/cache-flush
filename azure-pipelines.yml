@@ -63,7 +63,7 @@ stages:
 
 - stage: deployReviewEnvironment
   displayName: 'Deploy to Review Environment'
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/pull/'))
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/pull/'), eq(variables['Build.Reason'], 'PullRequest'))
   dependsOn: build
   jobs:
   - job: DeployReviewEnvironment
