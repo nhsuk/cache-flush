@@ -1,4 +1,4 @@
 {
   "environment": "staging",
-  "objects": [""]
+  "objects": ["https://not.nhs.uk/"]
 }
