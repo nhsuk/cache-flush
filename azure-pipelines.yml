@@ -1,0 +1,264 @@
+name: $(BuildId)
+
+trigger:
+  batch: false
+  branches:
+    include:
+    - '*'
+  tags:
+    include:
+    - '*'
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - '*'
+
+variables:
+  ARTIFACT_NAME: drop
+
+stages:
+- stage: build
+  jobs:
+  - job: RunTests
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+    - bash: |
+        if [ -f extensions.csproj ]
+        then
+            dotnet build extensions.csproj --output ./bin
+        fi
+      displayName: 'build function extensions'
+    - script: npm install
+      displayName: 'npm install'
+    - script: npm run lint
+      displayName: 'npm run lint'
+    - script: npm run test-with-coverage
+      displayName: 'npm run test-with-coverage'
+    - script: npm prune --production
+      displayName: 'npm prune --production'
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        reportDirectory: '$(System.DefaultWorkingDirectory)/coverage'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFiles: '$(System.DefaultWorkingDirectory)/test-results.xml'
+        testRunner: JUnit
+    - task: ArchiveFiles@2
+      displayName: 'Archive Function App'
+      inputs:
+        archiveFile: '$(System.DefaultWorkingDirectory)/$(Build.BuildId).zip'
+        includeRootFolder: false
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifacts'
+      inputs:
+        artifactName: $(ARTIFACT_NAME)
+        pathtoPublish: '$(System.DefaultWorkingDirectory)/$(Build.BuildId).zip'
+
+- stage: deployReviewEnvironment
+  displayName: 'Deploy to Review Environment'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/pull/'), eq(variables['Build.Reason'], 'PullRequest'))
+  dependsOn: build
+  jobs:
+  - deployment: DeployReviewEnvironment
+    displayName: 'Deploy to Review Environment'
+    environment: cacheflush-review
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    variables:
+      APP_NAME: 'nhsuk-cache-flush-func-dev-uks-PR-$(system.pullRequest.pullRequestNumber)'
+      ARTIFACT_PATH: $(System.DefaultWorkingDirectory)/$(ARTIFACT_NAME)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: $(ARTIFACT_NAME)
+              targetPath: $(ARTIFACT_PATH)
+          - task: ExtractFiles@1
+            inputs:
+              cleanDestinationFolder: false
+          - bash: $(System.DefaultWorkingDirectory)/scripts/get-variables-from-vault.sh
+            displayName: 'Get variables from Vault'
+            env:
+              RELEASE_ENVIRONMENTNAME: 'dev'
+              VAULT_TOKEN: $(VAULT_TOKEN)
+          - task: AzureResourceGroupDeployment@2
+            displayName: 'Create Or Update Resource Group'
+            inputs:
+              azureSubscription: Development
+              csmFile: $(System.DefaultWorkingDirectory)/AzureResourceGroup/AzureDeploy.json
+              location: $(LOCATION)
+              overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
+              resourceGroupName: $(RESOURCE_GROUP)
+          - task: AzureFunctionApp@1
+            displayName: 'Deploy function app'
+            inputs:
+              appName: $(APP_NAME)
+              appSettings: '-access_token "$(access_token)" -client_secret "$(client_secret)" -client_token "$(client_token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
+              appType: functionApp
+              azureSubscription: Development
+              package: $(ARTIFACT_PATH)/*.zip
+          - bash: $(System.DefaultWorkingDirectory)/scripts/test-app-is-deployed.sh
+            displayName: 'Test app is deployed'
+            env:
+              APP_SERVICE_HOST: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
+
+- stage: deployIntegrationEnvironment
+  displayName: 'Deploy to Integration Environment'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  dependsOn: build
+  jobs:
+  - deployment: DeployIntegrationEnvironment
+    displayName: 'Deploy to Integration Environment'
+    environment: cacheflush-int
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    variables:
+      APP_NAME: 'nhsuk-cache-flush-func-int-uks'
+      ARTIFACT_PATH: $(System.DefaultWorkingDirectory)/$(ARTIFACT_NAME)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: $(ARTIFACT_NAME)
+              targetPath: $(ARTIFACT_PATH)
+          - task: ExtractFiles@1
+            inputs:
+              cleanDestinationFolder: false
+          - bash: $(System.DefaultWorkingDirectory)/scripts/get-variables-from-vault.sh
+            displayName: 'Get variables from Vault'
+            env:
+              RELEASE_ENVIRONMENTNAME: 'int'
+              VAULT_TOKEN: $(VAULT_TOKEN)
+          - task: AzureResourceGroupDeployment@2
+            displayName: 'Create Or Update Resource Group'
+            inputs:
+              azureSubscription: 'www.nhs.uk'
+              csmFile: $(System.DefaultWorkingDirectory)/AzureResourceGroup/AzureDeploy.json
+              location: $(LOCATION)
+              overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
+              resourceGroupName: $(RESOURCE_GROUP)
+          - task: AzureFunctionApp@1
+            displayName: 'Deploy function app'
+            inputs:
+              appName: $(APP_NAME)
+              appSettings: '-access_token "$(access_token)" -client_secret "$(client_secret)" -client_token "$(client_token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
+              appType: functionApp
+              azureSubscription: 'www.nhs.uk'
+              package: $(ARTIFACT_PATH)/*.zip
+          - bash: $(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh
+            displayName: 'Test app is running'
+            env:
+              APP_SERVICE_HOST: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
+              FUNCTION_KEY: $(FUNCTION_KEY)
+
+- stage: deployStagingEnvironment
+  displayName: 'Deploy to Staging Environment'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  dependsOn: build
+  jobs:
+  - deployment: DeployStagingEnvironment
+    displayName: 'Deploy to Staging Environment'
+    environment: cacheflush-staging
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    variables:
+      APP_NAME: 'nhsuk-cache-flush-func-stag-uks'
+      ARTIFACT_PATH: $(System.DefaultWorkingDirectory)/$(ARTIFACT_NAME)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: $(ARTIFACT_NAME)
+              targetPath: $(ARTIFACT_PATH)
+          - task: ExtractFiles@1
+            inputs:
+              cleanDestinationFolder: false
+          - bash: $(System.DefaultWorkingDirectory)/scripts/get-variables-from-vault.sh
+            displayName: 'Get variables from Vault'
+            env:
+              RELEASE_ENVIRONMENTNAME: 'staging'
+              VAULT_TOKEN: $(VAULT_TOKEN)
+          - task: AzureResourceGroupDeployment@2
+            displayName: 'Create Or Update Resource Group'
+            inputs:
+              azureSubscription: 'www.nhs.uk'
+              csmFile: $(System.DefaultWorkingDirectory)/AzureResourceGroup/AzureDeploy.json
+              location: $(LOCATION)
+              overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
+              resourceGroupName: $(RESOURCE_GROUP)
+          - task: AzureFunctionApp@1
+            displayName: 'Deploy function app'
+            inputs:
+              appName: $(APP_NAME)
+              appSettings: '-access_token "$(access_token)" -client_secret "$(client_secret)" -client_token "$(client_token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
+              appType: functionApp
+              azureSubscription: 'www.nhs.uk'
+              package: $(ARTIFACT_PATH)/*.zip
+          - bash: $(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh
+            displayName: 'Test app is running'
+            env:
+              APP_SERVICE_HOST: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
+              FUNCTION_KEY: $(FUNCTION_KEY)
+
+- stage: deployProductionEnvironment
+  displayName: 'Deploy to Production Environment'
+  dependsOn: deployStagingEnvironment
+  jobs:
+  - deployment: DeployProductionEnvironment
+    displayName: 'Deploy to Production Environment'
+    environment: cacheflush-production
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    variables:
+      APP_NAME: 'nhsuk-cache-flush-func-prod-uks'
+      ARTIFACT_PATH: $(System.DefaultWorkingDirectory)/$(ARTIFACT_NAME)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: $(ARTIFACT_NAME)
+              targetPath: $(ARTIFACT_PATH)
+          - task: ExtractFiles@1
+            inputs:
+              cleanDestinationFolder: false
+          - bash: $(System.DefaultWorkingDirectory)/scripts/get-variables-from-vault.sh
+            displayName: 'Get variables from Vault'
+            env:
+              RELEASE_ENVIRONMENTNAME: 'production'
+              VAULT_TOKEN: $(VAULT_TOKEN)
+          - task: AzureResourceGroupDeployment@2
+            displayName: 'Create Or Update Resource Group'
+            inputs:
+              azureSubscription: 'www.nhs.uk'
+              csmFile: $(System.DefaultWorkingDirectory)/AzureResourceGroup/AzureDeploy.json
+              location: $(LOCATION)
+              overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
+              resourceGroupName: $(RESOURCE_GROUP)
+          - task: AzureFunctionApp@1
+            displayName: 'Deploy function app'
+            inputs:
+              appName: $(APP_NAME)
+              appSettings: '-access_token "$(access_token)" -client_secret "$(client_secret)" -client_token "$(client_token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
+              appType: functionApp
+              azureSubscription: 'www.nhs.uk'
+              package: $(ARTIFACT_PATH)/*.zip
+          - bash: $(System.DefaultWorkingDirectory)/scripts/test-app-is-running.sh
+            displayName: 'Test app is running'
+            env:
+              APP_SERVICE_HOST: $(AZUREFUNCTIONAPP.APPSERVICEAPPLICATIONURL)
+              FUNCTION_KEY: $(FUNCTION_KEY)
