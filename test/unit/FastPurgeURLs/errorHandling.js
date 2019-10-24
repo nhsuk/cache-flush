@@ -50,7 +50,7 @@ describe('FastPurgeUrls', () => {
     const validURL = 'https://nhs.uk';
 
     describe('required input', () => {
-      const missingInputMessage = 'Request must contain required properties: \'environment\', \'objects\'.';
+      const missingInputMessage = 'Request must contain a body with required properties: \'environment\', \'objects\'.';
 
       it('should return status code 400 if the request does not include a property for \'objects\'.', async () => {
         const body = { body: { environment: 'potentially-valid' } };
@@ -63,6 +63,15 @@ describe('FastPurgeUrls', () => {
 
       it('should return status code 400 if the request does not include a property for \'environment\'.', async () => {
         const body = { body: { objects: [validURL] } };
+
+        const res = await fastPurgeUrls(fakeCtx, body);
+
+        expectResponseValidWithMessage(res, 400, missingInputMessage);
+        expectLoggingErrorValid(err, logCount, res);
+      });
+
+      it('should return status code 400 if the request does not include a body', async () => {
+        const body = { body: null };
 
         const res = await fastPurgeUrls(fakeCtx, body);
 

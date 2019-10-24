@@ -8,10 +8,17 @@ module.exports = async function index(context, req) {
   context.log('Cache flush function started.');
 
   const { body: reqBody } = req;
+  if (!reqBody) {
+    const body = {
+      message: 'Request must contain a body with required properties: \'environment\', \'objects\'.',
+    };
+    return buildResponseAndLog(body, 400, context.log.error);
+  }
+
   const { debug, environment, objects } = reqBody;
   if (!isMandatoryInputIncluded(environment, objects)) {
     const body = {
-      message: 'Request must contain required properties: \'environment\', \'objects\'.',
+      message: 'Request must contain a body with required properties: \'environment\', \'objects\'.',
     };
     return buildResponseAndLog(body, 400, context.log.error);
   }
