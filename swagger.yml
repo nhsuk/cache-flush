@@ -117,7 +117,7 @@ components:
         message:
           type: string
           description: Informative message about why the request was rejected
-          example: 'Request must contain required properties: ''environment'', ''objects''.'
+          example: 'Request must contain a body with required properties: ''environment'', ''objects''.'
     403Response:
       type: object
       properties:
