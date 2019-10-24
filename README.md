@@ -6,6 +6,15 @@
 > An Azure Function App for flushing items out of Akamai's cache using
 [Fast Purge](https://developer.akamai.com/api/core_features/fast_purge/v3.html).
 
+## API definition
+
+The API of the app has been documented using
+[OpenAPI 3.0 Specification](https://swagger.io/docs/specification/about/).
+The file is available in the repo - [swagger.yml](./swagger.yml).
+To view the file in an online editor, click this
+[link](https://editor.swagger.io?url=https://raw.githubusercontent.com/nhsuk/cache-flush/master/swagger.yml).
+_Note: there is no link between the editor and the repository. Any changes made
+in the editor will not be saved back to the repository._
 
 ## Installation
 
