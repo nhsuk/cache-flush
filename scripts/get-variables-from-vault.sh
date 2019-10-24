@@ -12,7 +12,7 @@ get_vault_data() {
         "https://${VAULT_SERVER}${VAULT_PATH}" \
     )
   fi
-  echo "$DATA" | jq -r '.data | to_entries[] | [ .key, .value|tostring ] | ("##vso[task.setvariable variable="+.[0]+"]"+.[1])'
+  echo "$DATA" | jq -r '.data | to_entries[] | [ .key, .value|tostring ] | ("##vso[task.setvariable variable="+.[0]+";issecret=true]"+.[1])'
 }
 
 # CHECK VAULT PATH EXISTS
