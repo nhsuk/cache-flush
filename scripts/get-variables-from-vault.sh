@@ -30,16 +30,16 @@ fi
 # CHECK ENVIRONMENT NAME EXISTS
 # Within Vault this is the name of the environment e.g. dev, production, staging, etc.
 # The name of stage to which deployment is currently in progress
-if [ -z "$RELEASE_ENVIRONMENTNAME" ]; then
-  echo "RELEASE_ENVIRONMENTNAME not set, skipping environment config"
+if [ -z "$RELEASE_ENVIRONMENT" ]; then
+  echo "RELEASE_ENVIRONMENT not set, skipping environment config"
   SKIP="1"
 fi
 
-# WHEN RELEASE_ENVIRONMENTNAME=review, USE DEV
+# WHEN RELEASE_ENVIRONMENT=review, USE DEV
 # This saves having to setup a secret within /review but allows the differentiation
 # between review apps and those built from master branch
-if [ "$RELEASE_ENVIRONMENTNAME" == "review" ]; then
-  RELEASE_ENVIRONMENTNAME="dev"
+if [ "$RELEASE_ENVIRONMENT" == "review" ]; then
+  RELEASE_ENVIRONMENT="dev"
 fi
 
 # CHECK PROJECT NAME EXISTS
@@ -56,7 +56,7 @@ if [ "$SKIP" != "1" ]; then
   get_vault_data "$VAULT_PATH"
 
   # GET DEFAULT ENVIRONMENT VARIABLES
-  VAULT_PATH="/v1/secret/$RELEASE_ENVIRONMENTNAME/defaults"
+  VAULT_PATH="/v1/secret/$RELEASE_ENVIRONMENT/defaults"
   get_vault_data "$VAULT_PATH"
 
   # GET APPLICATION VARIABLES
@@ -64,6 +64,6 @@ if [ "$SKIP" != "1" ]; then
   get_vault_data "$VAULT_PATH"
 
   # GET ENVIRONMENT SPECIFIC APPLICATION VARIABLES
-  VAULT_PATH="/v1/secret/${RELEASE_ENVIRONMENTNAME}/$BUILD_DEFINITIONNAME/env-vars"
+  VAULT_PATH="/v1/secret/${RELEASE_ENVIRONMENT}/$BUILD_DEFINITIONNAME/env-vars"
   get_vault_data "$VAULT_PATH"
 fi
