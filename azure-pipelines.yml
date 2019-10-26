@@ -72,7 +72,14 @@ stages:
   - job: getNumberForMergedPR
     displayName: Get the number of the merged PR
     steps:
-    - bash: $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh "$COMMIT_MSG"
+    - bash: |
+        echo '*****************************'
+        env
+        echo '*****************************'
+        echo "$COMMIT_MSG"
+        echo $COMMIT_MSG
+        echo '*****************************'
+        $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh "$COMMIT_MSG"
       env:
         COMMIT_MSG: $(BUILD_SOURCEVERSIONMESSAGE)
       displayName: 'Set PR number, if available'
