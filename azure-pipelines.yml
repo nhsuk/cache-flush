@@ -21,6 +21,10 @@ variables:
 stages:
 - stage: build
   jobs:
+  - job: echoEnv
+    steps:
+    - bash: env
+      displayName: 'echo env'
   - job: RunTests
     pool:
       vmImage: 'Ubuntu 16.04'
@@ -73,15 +77,6 @@ stages:
       azureSubscription: Development
       environment: cacheflush-review
       releaseEnvironment: dev
-
-- stage: testingMerging
-  displayName: 'testing merging and deleting review envs'
-  jobs:
-  - job: deleteReviewEnvironment
-    displayName: Delete review environment for merged PR
-    steps:
-    - bash: echo env
-      displayName: 'echo env'
 
 - stage: deployIntegrationEnvironment
   displayName: 'Deploy to Integration Environment'
