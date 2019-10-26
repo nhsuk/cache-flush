@@ -17,6 +17,7 @@ pr:
 
 variables:
   ARTIFACT_NAME: drop
+  REVIEW_APP_NAME_ROOT: 'nhsuk-cache-flush-func-dev-uks-PR-'
 
 stages:
 - stage: build
@@ -61,6 +62,30 @@ stages:
         artifactName: $(ARTIFACT_NAME)
         pathtoPublish: '$(System.DefaultWorkingDirectory)/$(Build.BuildId).zip'
 
+- stage: testingMerging
+  displayName: 'testing merging and deleting review envs'
+  jobs:
+  - job: getNumberForMergedPR
+    displayName: Get the number of the merged PR
+    steps:
+    - bash: $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh "$COMMIT_MSG"
+      env:
+        COMMIT_MSG: $(BUILD_SOURCEVERSIONMESSAGE)
+      displayName: 'Set PR number, if available'
+  - job: deleteReviewEnvironment
+    condition: eq(variables['PR_NUMBER'], 0)
+    dependsOn: getNumberForMergedPR
+    displayName: Delete review environment for merged PR
+    steps:
+    - task: AzureCLI@2
+      displayName: 'delete review environment for merged PR'
+      inputs:
+        azureSubscription: Development
+        inlineScript: |
+          az functionapp delete --name $(REVIEW_APP_NAME_ROOT)$(PR_NUMBER) --resource-group nhsuk-utils-rg-dev-uks
+        scriptLocation: inlineScript
+        scriptType: bash
+
 - stage: deployReviewEnvironment
   displayName: 'Deploy to Review Environment'
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/pull/'), eq(variables['Build.Reason'], 'PullRequest'))
@@ -68,20 +93,11 @@ stages:
   jobs:
   - template: ./templates/deployment-job.yml
     parameters:
-      appName: 'nhsuk-cache-flush-func-dev-uks-PR-$(system.pullRequest.pullRequestNumber)'
+      appName: '$(REVIEW_APP_NAME_ROOT)$(system.pullRequest.pullRequestNumber)'
       appTest: deployed
       azureSubscription: Development
       environment: cacheflush-review
       releaseEnvironment: dev
-
-- stage: testingMerging
-  displayName: 'testing merging and deleting review envs'
-  jobs:
-  - job: deleteReviewEnvironment
-    displayName: Delete review environment for merged PR
-    steps:
-    - bash: echo env
-      displayName: 'echo env'
 
 - stage: deployIntegrationEnvironment
   displayName: 'Deploy to Integration Environment'
@@ -91,16 +107,20 @@ stages:
   # - job: deleteReviewEnvironment
   #   displayName: Delete review environment for merged PR
   #   steps:
-  #   - bash: echo env
-  #     displayName: 'echo env'
-    # - task: AzureCLI@2
-    #   displayName: 'delete review environment for merged PR'
-    #   inputs:
-    #     azureSubscription: Development
-    #     inlineScript: |
-    #       az  functionapp delete --name
-    #     scriptLocation: inlineScript
-    #     scriptType: bash
+  #   - bash: $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh "$COMMIT_MSG"
+  #     env:
+  #       COMMIT_MSG: $(BUILD_SOURCEVERSIONMESSAGE)
+  #     displayName: 'Set PR number, if available'
+  #   - task: AzureCLI@2
+  #     dependsOn: deleteReviewEnvironment
+  #     condition: eq(variables['PR_NUMBER'], 0)
+  #     displayName: 'delete review environment for merged PR'
+  #     inputs:
+  #       azureSubscription: Development
+  #       inlineScript: |
+  #         az functionapp delete --name $(REVIEW_APP_NAME_ROOT)$(PR_NUMBER) --resource-group nhsuk-utils-rg-dev-uks
+  #       scriptLocation: inlineScript
+  #       scriptType: bash
   - template: ./templates/deployment-job.yml
     parameters:
       appName: 'nhsuk-cache-flush-func-int-uks'
