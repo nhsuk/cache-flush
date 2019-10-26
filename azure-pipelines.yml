@@ -78,12 +78,12 @@ stages:
         echo '*****************************'
         echo "$COMMIT_MSG"
         echo $COMMIT_MSG
-        echo $(BUILD_SOURCEVERSIONMESSAGE)
+        echo $(BUILD.BUILD_SOURCEVERSIONMESSAGE)
         echo '*****************************'
         $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh "$COMMIT_MSG"
-        $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh $(BUILD_SOURCEVERSIONMESSAGE)
+        $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh $(BUILD.BUILD_SOURCEVERSIONMESSAGE)
       env:
-        COMMIT_MSG: $(BUILD_SOURCEVERSIONMESSAGE)
+        COMMIT_MSG: $(BUILD.BUILD_SOURCEVERSIONMESSAGE)
       displayName: 'Set PR number, if available'
   - job: deleteReviewEnvironment
     condition: eq(variables['PR_NUMBER'], 0)
