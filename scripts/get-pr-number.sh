@@ -2,6 +2,7 @@
 
 regex="#([0-9]+)"
 echo "Testing commit msg: '$1' against regex: '$regex'."
+
 echo "$1"
 
 if [[ "$1" =~ $regex ]]; then

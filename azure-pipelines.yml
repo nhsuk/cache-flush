@@ -22,6 +22,10 @@ variables:
 stages:
 - stage: build
   jobs:
+  - job: echoEnv
+    steps:
+    - bash: env
+      displayName: 'echo env'
   - job: RunTests
     pool:
       vmImage: 'Ubuntu 16.04'
