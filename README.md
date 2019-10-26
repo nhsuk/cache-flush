@@ -33,7 +33,6 @@ in the editor will not be saved back to the repository._
 
 * Start the Function app - `func start`
 
-
 ## Environment variables
 
 Environment variables are expected to be managed by the environment in which
