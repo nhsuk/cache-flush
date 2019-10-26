@@ -74,11 +74,33 @@ stages:
       environment: cacheflush-review
       releaseEnvironment: dev
 
+- stage: testingMerging
+  displayName: 'testing merging and deleting review envs'
+  jobs:
+  - job: deleteReviewEnvironment
+    displayName: Delete review environment for merged PR
+    steps:
+    - bash: echo env
+      displayName: 'echo env'
+
 - stage: deployIntegrationEnvironment
   displayName: 'Deploy to Integration Environment'
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn: build
   jobs:
+  # - job: deleteReviewEnvironment
+  #   displayName: Delete review environment for merged PR
+  #   steps:
+  #   - bash: echo env
+  #     displayName: 'echo env'
+    # - task: AzureCLI@2
+    #   displayName: 'delete review environment for merged PR'
+    #   inputs:
+    #     azureSubscription: Development
+    #     inlineScript: |
+    #       az  functionapp delete --name
+    #     scriptLocation: inlineScript
+    #     scriptType: bash
   - template: ./templates/deployment-job.yml
     parameters:
       appName: 'nhsuk-cache-flush-func-int-uks'
