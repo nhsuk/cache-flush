@@ -72,11 +72,11 @@ stages:
       displayName: 'Set PR number, if available'
       name: PR_NUMBER
   - job: deleteReviewEnvironment
-    # condition: eq(variables['PR_NUMBER'], 0)
+    # condition: eq(variables['prNumber'], 0)
     dependsOn: getNumberForMergedPR
     displayName: Delete review environment for merged PR
     variables:
-      PR_NUMBER: $[dependencies.getNumberForMergedPR.outputs['PR_NUMBER.PR_NUMBER']]
+      prNumber: $[dependencies.getNumberForMergedPR.outputs['PR_NUMBER.PR_NUMBER']]
     steps:
     - bash: |
         env
@@ -87,6 +87,9 @@ stages:
         azureSubscription: Development
         inlineScript: |
           echo '***************DELETE FUNCTION APP STARTING*****************'
+          echo $PR_NUMBER
+          echo $(prNumber)
+          echo 'DELETE'
           az functionapp delete --name $(REVIEW_APP_NAME_ROOT)$(PR_NUMBER) --resource-group nhsuk-utils-rg-dev-uks --debug
           echo '***************DELETE FUNCTION APP COMPLETE?*****************'
         scriptLocation: inlineScript
