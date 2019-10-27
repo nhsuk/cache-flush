@@ -22,10 +22,6 @@ variables:
 stages:
 - stage: build
   jobs:
-  - job: echoEnv
-    steps:
-    - bash: env
-      displayName: 'echo env'
   - job: RunTests
     pool:
       vmImage: 'Ubuntu 16.04'
@@ -72,16 +68,12 @@ stages:
   - job: getNumberForMergedPR
     displayName: Get the number of the merged PR
     steps:
-    - bash: |
-        echo '*****************************'
-        env
-        echo '*****************************'
-        echo $BUILD_SOURCEVERSIONMESSAGE
-        echo '*****************************'
-        $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh "$BUILD_SOURCEVERSIONMESSAGE"
-        $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh $BUILD_SOURCEVERSIONMESSAGE
+    - bash: $(System.DefaultWorkingDirectory)/scripts/get-pr-number.sh "$BUILD_SOURCEVERSIONMESSAGE"
       displayName: 'Set PR number, if available'
+      name: PR_NUMBER
   - job: deleteReviewEnvironment
+    variables:
+      PR_NUMBER: $[dependencies.getNumberForMergedPR.outputs['PR_NUMBER.PR_NUMBER']]
     condition: eq(variables['PR_NUMBER'], 0)
     dependsOn: getNumberForMergedPR
     displayName: Delete review environment for merged PR
