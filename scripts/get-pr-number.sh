@@ -10,4 +10,5 @@ if [[ "$1" =~ $regex ]]; then
   echo "##vso[task.setvariable variable=PR_NUMBER;isOutput=true]${BASH_REMATCH[1]}"
 else
   echo "No PR number found"
+  echo "##vso[task.setvariable variable=PR_NUMBER;isOutput=true]NOTHING"
 fi;
