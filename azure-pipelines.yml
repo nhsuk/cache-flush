@@ -72,12 +72,15 @@ stages:
       displayName: 'Set PR number, if available'
       name: PR_NUMBER
   - job: deleteReviewEnvironment
-    variables:
-      PR_NUMBER: $[dependencies.getNumberForMergedPR.outputs['PR_NUMBER.PR_NUMBER']]
-    condition: eq(variables['PR_NUMBER'], 0)
+    # condition: eq(variables['PR_NUMBER'], 0)
     dependsOn: getNumberForMergedPR
     displayName: Delete review environment for merged PR
+    variables:
+      PR_NUMBER: $[dependencies.getNumberForMergedPR.outputs['PR_NUMBER.PR_NUMBER']]
     steps:
+    - bash: |
+      env
+      echo $PR_NUMBER
     - task: AzureCLI@2
       displayName: 'delete review environment for merged PR'
       inputs:
