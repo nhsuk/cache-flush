@@ -72,7 +72,7 @@ stages:
       displayName: 'Set PR number, if available'
       name: PR_NUMBER
   - job: deleteReviewEnvironment
-    condition: eq(dependencies.getNumberForMergedPR.outputs['PR_NUMBER'], 0)
+    condition: eq(dependencies.getNumberForMergedPR.outputs['PR_NUMBER.PR_NUMBER'], 0)
     dependsOn: getNumberForMergedPR
     displayName: Delete review environment for merged PR
     variables:
