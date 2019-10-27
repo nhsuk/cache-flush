@@ -79,8 +79,8 @@ stages:
       PR_NUMBER: $[dependencies.getNumberForMergedPR.outputs['PR_NUMBER.PR_NUMBER']]
     steps:
     - bash: |
-      env
-      echo $PR_NUMBER
+        env
+        echo $PR_NUMBER
     - task: AzureCLI@2
       displayName: 'delete review environment for merged PR'
       inputs:
