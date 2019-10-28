@@ -16,7 +16,7 @@ jobs:
         APP_TEST: ${{ parameters.appTest }}
         AZURE_SUBSCRIPTION: ${{ parameters.azureSubscription }}
         ENVIRONMENT: ${{ parameters.environment }}
-        RELEASE_ENVIRONMENT: ${{ parameters.releaseEnvironment }}
+        VAULT_RELEASE_ENVIRONMENT: ${{ parameters.releaseEnvironment }}
 - deployment: deployEnvironment
   displayName: 'Deploy environment'
   environment: ${{ parameters.environment }}
@@ -39,7 +39,8 @@ jobs:
         - bash: $(System.DefaultWorkingDirectory)/scripts/get-variables-from-vault.sh
           displayName: 'Get variables from Vault'
           env:
-            RELEASE_ENVIRONMENT: ${{ parameters.releaseEnvironment }}
+            VAULT_APP_NAME: $(VAULT_APP_NAME)
+            VAULT_RELEASE_ENVIRONMENT: ${{ parameters.releaseEnvironment }}
             VAULT_TOKEN: $(VAULT_TOKEN)
         - task: AzureResourceGroupDeployment@2
           displayName: 'Create Or Update Resource Group'
