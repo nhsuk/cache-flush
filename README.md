@@ -111,7 +111,6 @@ There are no default values and they all must have a value set.
 | Variable                       | Description                                                                                                                                                |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `APP_PLAN`                     | [The App Service plan](https://docs.microsoft.com/en-us/azure/app-service/overview-hosting-plans) used by the function app                                 |
-| `AZURE_SUBSCRIPTION`           | The Azure Subscription into which the function app should be deployed                                                                                      |
 | `LOCATION`                     | [The location](https://azure.microsoft.com/en-us/global-infrastructure/locations/) where the function app is deployed to                                   |
 | `RESOURCE_GROUP`               | [The Resource Group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-overview#resource-groups) the function app belongs to    |
 | `WEBSITE_NODE_DEFAULT_VERSION` | [Version of node used by function app runtime](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings#website_node_default_version) |

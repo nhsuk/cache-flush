@@ -1,6 +1,7 @@
 parameters:
   appName: ''             # name of the app
   appTest: ''             # must be 'running' or 'deployed'
+  azureSubscription: ''   # the service connection in the pipeline
   environment: ''         # name of the environment in DevOps
   releaseEnvironment: ''  # env name for secret retrieval from Vault
 
@@ -13,6 +14,7 @@ jobs:
       env:
         APP_NAME: ${{ parameters.appName }}
         APP_TEST: ${{ parameters.appTest }}
+        AZURE_SUBSCRIPTION: ${{ parameters.azureSubscription }}
         ENVIRONMENT: ${{ parameters.environment }}
         VAULT_RELEASE_ENVIRONMENT: ${{ parameters.releaseEnvironment }}
 - deployment: deployEnvironment
@@ -43,7 +45,7 @@ jobs:
         - task: AzureResourceGroupDeployment@2
           displayName: 'Create Or Update Resource Group'
           inputs:
-            azureSubscription: $(AZURE_SUBSCRIPTION)
+            azureSubscription: ${{ parameters.azureSubscription }}
             csmFile: $(System.DefaultWorkingDirectory)/AzureResourceGroup/AzureDeploy.json
             location: $(LOCATION)
             overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
@@ -54,7 +56,7 @@ jobs:
             appName: $(APP_NAME)
             appSettings: '-access_token "$(access_token)" -client_secret "$(client_secret)" -client_token "$(client_token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
             appType: functionApp
-            azureSubscription: $(AZURE_SUBSCRIPTION)
+            azureSubscription: ${{ parameters.azureSubscription }}
             package: $(ARTIFACT_PATH)/*.zip
         - ${{ if eq(parameters.appTest, 'deployed') }}:
           - bash: $(System.DefaultWorkingDirectory)/scripts/test-app-is-deployed.sh

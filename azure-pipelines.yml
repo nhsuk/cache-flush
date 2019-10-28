@@ -72,6 +72,7 @@ stages:
     parameters:
       appName: '$(REVIEW_APP_NAME_ROOT)$(system.pullRequest.pullRequestNumber)'
       appTest: deployed
+      azureSubscription: Development
       environment: cacheflush-review
       releaseEnvironment: dev
 
@@ -84,6 +85,7 @@ stages:
     parameters:
       appName: 'nhsuk-cache-flush-func-int-uks'
       appTest: running
+      azureSubscription: www.nhs.uk
       environment: cacheflush-int
       releaseEnvironment: int
   - job: getNumberForMergedPR
@@ -121,6 +123,7 @@ stages:
     parameters:
       appName: 'nhsuk-cache-flush-func-stag-uks'
       appTest: running
+      azureSubscription: www.nhs.uk
       environment: cacheflush-staging
       releaseEnvironment: staging
 
@@ -132,5 +135,6 @@ stages:
     parameters:
       appName: 'nhsuk-cache-flush-func-prod-uks'
       appTest: running
+      azureSubscription: www.nhs.uk
       environment: cacheflush-production
       releaseEnvironment: production
