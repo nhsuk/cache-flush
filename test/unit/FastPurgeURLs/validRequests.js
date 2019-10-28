@@ -99,19 +99,6 @@ describe('FastPurgeUrls', () => {
         expectResponseValidWithBody(res, 201, expectedResponse);
         expectLoggingValid(messages, expectedResponse);
       });
-
-      it('should remove any blank lines submitted', async () => {
-        const expectedResponse = { ...akamaiResponse };
-        expectedResponse.urls = [validURL];
-        const body = { environment: validEnv, objects: ['', validURL, ''] };
-
-        setUpNock(validEnv, [validURL]);
-
-        const res = await fastPurgeUrls(fakeCtx, { body });
-
-        expectResponseValidWithBody(res, 201, expectedResponse);
-        expectLoggingValid(messages, expectedResponse);
-      });
     });
   });
 });
