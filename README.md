@@ -74,26 +74,44 @@ deploying to production and this setup allows that to happen.
 Environment variables are expected to be managed by the environment in which
 the application is being run. This is best practice as described by
 [twelve-factor](https://12factor.net/config). Environment variables are stored
-in an instance of [HashiCorp Vault](https://www.vaultproject.io/).
+in an instance of [HashiCorp Vault](https://www.vaultproject.io/) and retrieved
+by running
+[./scripts/get-variables-from-vault.sh](./scripts/get-variables-from-vault.sh).
+
+The script requires the following environment variables to run successfully.
+The script will validate the existence of the variables before making a request
+to Vault.
+There are no default values and they all must have a value set.
+
+| Variable                    | Description                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `VAULT_APP_NAME`            | The name/path of the app where the env vars should be retrieved from within Vault e.g. `nhsuk.cache-flush` |
+| `VAULT_RELEASE_ENVIRONMENT` | The name/path of the environment where the env vars should be retrieved from within Vault e.g. `dev`       |
+| `VAULT_SERVER`              | FQDN including protocol of the Vault server e.g. `https://my.vault.com`                                    |
+| `VAULT_TOKEN`               | The token used to authenticate with Vault                                                                  |
 
 The following environment variables are required for the application to run
 successfully.
-| Variable          | Description                                    | Default           | Required  |
-| ----------------- | ---------------------------------------------- | ----------------- | --------- |
-| `access_token`    | Akamai API access token                        |                   | Yes       |
-| `client_secret`   | Akamai API client secret                       |                   | Yes       |
-| `client_token`    | Akamai API client token                        |                   | Yes       |
-| `host`            | Akamai API base hostname without the scheme    |                   | Yes       |
+There are no default values and they all must have a value set.
+
+| Variable          | Description                                 |
+| ----------------- | ------------------------------------------- |
+| `access_token`    | Akamai API access token                     |
+| `client_secret`   | Akamai API client secret                    |
+| `client_token`    | Akamai API client token                     |
+| `host`            | Akamai API base hostname without the scheme |
 
 During deployment of the application additional environment variables are
 retrieved from Vault. They define the details of where the application will be
 deployed within Azure.
 
-Given the variables vary for each environment, there are no default values and
-they must all have values set.
+The variables vary for each environment.
+There are no default values and they all must have a value set.
+
 | Variable                       | Description                                                                                                                                                |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `APP_PLAN`                     | [The App Service plan](https://docs.microsoft.com/en-us/azure/app-service/overview-hosting-plans) used by the function app                                 |
+| `AZURE_SUBSCRIPTION`           | The Azure Subscription into which the function app should be deployed                                                                                      |
 | `LOCATION`                     | [The location](https://azure.microsoft.com/en-us/global-infrastructure/locations/) where the function app is deployed to                                   |
 | `RESOURCE_GROUP`               | [The Resource Group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-overview#resource-groups) the function app belongs to    |
 | `WEBSITE_NODE_DEFAULT_VERSION` | [Version of node used by function app runtime](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings#website_node_default_version) |
