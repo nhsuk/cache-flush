@@ -103,7 +103,7 @@ describe('FastPurgeUrls', () => {
     });
 
     describe('invalid environment', () => {
-      it('should return status code 406 for an environment not on the white list', async () => {
+      it('should return status code 400 for an environment not on the white list', async () => {
         const notWhitelistedEnv = 'not-whitelisted';
         const body = { environment: notWhitelistedEnv, objects: [validURL] };
 
@@ -115,24 +115,16 @@ describe('FastPurgeUrls', () => {
     });
 
     describe('invalid URLs', () => {
-      it('should return status code 406 when a single, invalid URL submitted', async () => {
-        const body = { environment, objects: [unparseableURL] };
+      [[''], [unparseableURL], [unparseableURL, 'https://not.nhs.uk', validURL]].forEach((testValue) => {
+        it(`should return status code 400 when at least one invalid URL is included in the request. Testing ${testValue}`, async () => {
+          const body = { environment, objects: testValue };
 
-        const res = await fastPurgeUrls(fakeCtx, { body });
+          const res = await fastPurgeUrls(fakeCtx, { body });
 
-        expectResponseValidWithMessage(res, 400, 'Some URLs are invalid as they are not parseable into a valid URL.');
-        expectLoggingErrorValid(err, logCount, res);
-        expectSingleURLInRepsonse(res, unparseableURL);
-      });
-
-      it('should return status code 406 when a single, invalid URL is submitted along with valid URLs', async () => {
-        const body = { environment, objects: ['https://not.nhs.uk', unparseableURL, validURL] };
-
-        const res = await fastPurgeUrls(fakeCtx, { body });
-
-        expectResponseValidWithMessage(res, 400, 'Some URLs are invalid as they are not parseable into a valid URL.');
-        expectLoggingErrorValid(err, logCount, res);
-        expectSingleURLInRepsonse(res, unparseableURL);
+          expectResponseValidWithMessage(res, 400, 'Some URLs are invalid as they are not parseable into a valid URL.');
+          expectLoggingErrorValid(err, logCount, res);
+          expectSingleURLInRepsonse(res, testValue[0]);
+        });
       });
 
       it('should return status code 403 when a URL does not end in \'nhs.uk\'', async () => {

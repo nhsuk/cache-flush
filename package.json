@@ -1,6 +1,6 @@
 {
   "name": "cache-flush",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A function app to flush items from Akamai's cache",
   "scripts": {
     "git-hook": "npm run lint && npm run test",
