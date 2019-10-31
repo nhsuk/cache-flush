@@ -1,0 +1,71 @@
+{
+  "type": "modal",
+  "title": {
+    "type": "plain_text",
+    "text": "Cache Buster",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Submit",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Cancel",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "input",
+      "block_id": "environment",
+      "element": {
+        "type": "static_select",
+        "action_id": "environment_input",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select an item environment",
+          "emoji": true
+        },
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "production",
+              "emoji": true
+            },
+            "value": "production"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "staging",
+              "emoji": true
+            },
+            "value": "staging"
+          }
+        ]
+      },
+      "label": {
+        "type": "plain_text",
+        "text": "Environment",
+        "emoji": true
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "urls",
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "urls_input",
+        "multiline": true,
+        "max_length": 2000
+      },
+      "label": {
+        "type": "plain_text",
+        "text": "URLs",
+        "emoji": true
+      }
+    }
+  ]
+}

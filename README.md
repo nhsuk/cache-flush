@@ -94,12 +94,14 @@ The following environment variables are required for the application to run
 successfully.
 There are no default values and they all must have a value set.
 
-| Variable          | Description                                 |
-| ----------------- | ------------------------------------------- |
-| `access_token`    | Akamai API access token                     |
-| `client_secret`   | Akamai API client secret                    |
-| `client_token`    | Akamai API client token                     |
-| `host`            | Akamai API base hostname without the scheme |
+| Variable                                               | Description                                                                                                               |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `access_token`                                         | Akamai API access token                                                                                                   |
+| `client_secret`                                        | Akamai API client secret                                                                                                  |
+| `client_token`                                         | Akamai API client token                                                                                                   |
+| `host`                                                 | Akamai API base hostname without the scheme                                                                               |
+| `SLACK_BOT_USER_OAUTH_ACCESS_TOKEN`                    | The OAuth Access Token for the app's [Bot User](https://api.slack.com/docs/token-types#bot)                               |
+| `CACHE_FLUSH_FUNCTION_APP_FULL_URL_WITH_PATH_AND_CODE` | The full URL to the cache flush function app including protocol, path to the function and the code query string parameter |
 
 During deployment of the application additional environment variables are
 retrieved from Vault. They define the details of where the application will be
