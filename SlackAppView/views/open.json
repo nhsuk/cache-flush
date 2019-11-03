@@ -24,7 +24,7 @@
         "action_id": "environment_input",
         "placeholder": {
           "type": "plain_text",
-          "text": "Select an item environment",
+          "text": "Select the environment to flush",
           "emoji": true
         },
         "options": [
@@ -59,7 +59,11 @@
         "type": "plain_text_input",
         "action_id": "urls_input",
         "multiline": true,
-        "max_length": 2000
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Add each URL to flush on a new line",
+          "emoji": true
+        }
       },
       "label": {
         "type": "plain_text",
