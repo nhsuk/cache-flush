@@ -3,8 +3,8 @@ const rp = require('request-promise-native');
 
 const openView = require('./views/open.json');
 
-module.exports = async function index(context, req) {
-  await rp({
+module.exports = async function initialView(context, req) {
+  rp({
     body: {
       trigger_id: qs.decode(req.body).trigger_id,
       view: openView,
