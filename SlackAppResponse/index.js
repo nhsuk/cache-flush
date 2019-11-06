@@ -1,9 +1,7 @@
 module.exports = async function activityFunction(context) {
-  context.log('Starting orchestrator function');
-  const { input } = context.bindings;
-  context.log(`INPUT....................${input}`);
+  context.log('*************Executing SlackAppResponse function - pre timeout');
   await new Promise((resolve) => setTimeout(resolve, 3000));
-  context.log(`INPUT....................${input}`);
+  context.log('*************Executing SlackAppResponse function - post timeout');
 
-  return context.input;
+  context.done(null, 'done');
 };

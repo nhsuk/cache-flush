@@ -10,7 +10,7 @@
       "type": "section",
       "text": {
         "type": "plain_text",
-        "text": "Your request is being processed.",
+        "text": "Your request is being processed. A new view will be displayed with the status shortly.",
         "emoji": true
       }
     }

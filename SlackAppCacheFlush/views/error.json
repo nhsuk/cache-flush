@@ -1,0 +1,31 @@
+{
+  "type": "modal",
+  "title": {
+    "type": "plain_text",
+    "text": "Cache Buster",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "There was a problem with the cache flush. Details below."
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ""
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ""
+      }
+    }
+  ]
+}
