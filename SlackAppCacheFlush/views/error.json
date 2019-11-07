@@ -2,7 +2,7 @@
   "type": "modal",
   "title": {
     "type": "plain_text",
-    "text": "Cache Buster",
+    "text": "Cache Flush",
     "emoji": true
   },
   "blocks": [
@@ -10,8 +10,20 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "There was a problem with the cache flush. Details below."
+        "text": "The request to cache flush has not been executed :disappointed:.\nThe details of why are shown below :arrow_down:.\nIf the reason is due to an invalid request please make the necessary amendments and resubmit."
       }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "If the problem persists please contact <@U16N9V10F>."
+        }
+      ]
+    },
+    {
+      "type": "divider"
     },
     {
       "type": "section",

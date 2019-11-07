@@ -2,7 +2,12 @@
   "type": "modal",
   "title": {
     "type": "plain_text",
-    "text": "Cache Buster",
+    "text": "Cache Flush",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Close",
     "emoji": true
   },
   "blocks": [
@@ -10,7 +15,7 @@
       "type": "section",
       "text": {
         "type": "plain_text",
-        "text": "Your request is being processed. A new view will be displayed with the status shortly.",
+        "text": "Your request is being processed, it may take a few seconds to complete. The status of the request will be communicated within this view and via a direct message.\nThis view can be closed without affecting the request.",
         "emoji": true
       }
     }

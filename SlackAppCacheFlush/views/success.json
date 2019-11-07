@@ -2,7 +2,7 @@
   "type": "modal",
   "title": {
     "type": "plain_text",
-    "text": "Cache Buster",
+    "text": "Cache Flush",
     "emoji": true
   },
   "blocks": [
@@ -10,8 +10,11 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The cache flush has been successful. Details below."
+        "text": "The request to cache flush has been successful :smiley:. The URLs will be refreshed within approximatelty five seconds.\nThe details of the request are shown below :arrow_down:."
       }
+    },
+    {
+      "type": "divider"
     },
     {
       "type": "section",

@@ -2,7 +2,7 @@
   "type": "modal",
   "title": {
     "type": "plain_text",
-    "text": "Cache Buster",
+    "text": "Cache Flush",
     "emoji": true
   },
   "submit": {
@@ -24,7 +24,7 @@
         "action_id": "environment_input",
         "placeholder": {
           "type": "plain_text",
-          "text": "Select the environment to flush",
+          "text": "Select the environment to flush URLs from",
           "emoji": true
         },
         "options": [
