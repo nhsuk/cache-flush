@@ -1,7 +1,7 @@
 # Akamai Cache Flush Azure Function App
 
 [![GitHub Release](https://img.shields.io/github/release/nhsuk/cache-flush.svg)](https://github.com/nhsuk/cache-flush/releases/latest/)
-[![Build Status](https://dev.azure.com/nhsuk/nhsuk.utilities/_apis/build/status/nhsuk.cache-flush?branchName=master)](https://dev.azure.com/nhsuk/nhsuk.utilities/_build/latest?definitionId=323&branchName=master)
+[![Build Status](https://dev.azure.com/nhsuk/nhsuk.utilities/_apis/build/status/nhsuk.cache-flush?branchName=master)](https://dev.azure.com/nhsuk/nhsuk.utilities/_build/latest?definitionId=323&branchName=master) [![Greenkeeper badge](https://badges.greenkeeper.io/nhsuk/cache-flush.svg)](https://greenkeeper.io/)
 
 > An Azure Function App for flushing items out of Akamai's cache using
 [Fast Purge](https://developer.akamai.com/api/core_features/fast_purge/v3.html).
