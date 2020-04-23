@@ -6,8 +6,8 @@
     "git-hook": "npm run lint && npm run test",
     "lint": "eslint --ext .js,.json .",
     "test": "echo skipped",
-    "test-watch": "npm run test -- --watch --reporter min",
-    "test-with-coverage": "nyc --nycrc-path=.nycrc.json --reporter=html --reporter=cobertura mocha --exit --recursive test --reporter mocha-junit-reporter"
+    "test-watch": "echo skipped",
+    "test-with-coverage": "echo skipped"
   },
   "author": "Steve Hunt",
   "dependencies": {
