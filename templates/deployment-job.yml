@@ -21,7 +21,7 @@ jobs:
   displayName: 'Deploy environment'
   environment: ${{ parameters.environment }}
   pool:
-    vmImage: 'Ubuntu 16.04'
+    vmImage: 'Ubuntu 20.04'
   variables:
     APP_NAME: ${{ parameters.appName }}
     ARTIFACT_PATH: $(System.DefaultWorkingDirectory)/$(ARTIFACT_NAME)
