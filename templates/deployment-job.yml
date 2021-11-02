@@ -9,7 +9,7 @@ jobs:
 - job: validateParameters
   displayName: 'Validate template parameters'
   steps:
-    - bash: $(System.DefaultWorkingDirectory)/scripts/validate-template-parameters.sh '$(REVIEW_APP_NAME_ROOT)$(System.PullRequest.PullRequestId)'
+    - bash: $(System.DefaultWorkingDirectory)/scripts/validate-template-parameters.sh
       displayName: 'Validate template parameters'
       env:
         APP_NAME: ${{ parameters.appName }}
@@ -60,7 +60,7 @@ jobs:
           displayName: 'Deploy function app'
           inputs:
             appName: ${{ parameters.appName }}
-            appSettings: '-access_token "$(access-token)" -client_secret "$(client-secret)" -client_token "$(client-token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
+            appSettings: '-access_token "$(access-token)" -client_secret "$(client-secret)" -client_token "$(client-token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE-NODE-DEFAULT-VERSION)'
             appType: functionApp
             azureSubscription: ${{ parameters.azureSubscription }}
             package: $(ARTIFACT_PATH)/*.zip
