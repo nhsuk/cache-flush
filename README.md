@@ -6,6 +6,8 @@
 > An Azure Function App for flushing items out of Akamai's cache using
 [Fast Purge](https://developer.akamai.com/api/core_features/fast_purge/v3.html).
 
+This is a test change
+
 ## API definition
 
 The API of the app has been documented using
