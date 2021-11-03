@@ -17,11 +17,10 @@ jobs:
         AZURE_SUBSCRIPTION: ${{ parameters.azureSubscription }}
         ENVIRONMENT: ${{ parameters.environment }}
         VAULT_RELEASE_ENVIRONMENT: ${{ parameters.releaseEnvironment }}
+
 - deployment: deployEnvironment
   displayName: 'Deploy environment'
   environment: ${{ parameters.environment }}
-  pool:
-    vmImage: 'Ubuntu 16.04'
   variables:
     APP_NAME: ${{ parameters.appName }}
     ARTIFACT_PATH: $(System.DefaultWorkingDirectory)/$(ARTIFACT_NAME)
@@ -42,19 +41,26 @@ jobs:
             VAULT_APP_NAME: $(VAULT_APP_NAME)
             VAULT_RELEASE_ENVIRONMENT: ${{ parameters.releaseEnvironment }}
             VAULT_TOKEN: $(VAULT_TOKEN)
+          enabled: false
+        - task: AzureKeyVault@2
+          inputs:
+            azureSubscription: ${{ parameters.azureSubscription }}
+            KeyVaultName: ${{ parameters.keyVault }}
+            SecretsFilter: '*'
+            RunAsPreJob: false
         - task: AzureResourceGroupDeployment@2
           displayName: 'Create Or Update Resource Group'
           inputs:
             azureSubscription: ${{ parameters.azureSubscription }}
             csmFile: $(System.DefaultWorkingDirectory)/AzureResourceGroup/AzureDeploy.json
             location: $(LOCATION)
-            overrideParameters: '-appPlan "$(APP_PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
-            resourceGroupName: $(RESOURCE_GROUP)
+            overrideParameters: '-appPlan "$(APP-PLAN)" -appName "$(APP_NAME)" -location "$(LOCATION)"'
+            resourceGroupName: $(RESOURCE-GROUP)
         - task: AzureFunctionApp@1
           displayName: 'Deploy function app'
           inputs:
-            appName: $(APP_NAME)
-            appSettings: '-access_token "$(access_token)" -client_secret "$(client_secret)" -client_token "$(client_token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE_NODE_DEFAULT_VERSION)'
+            appName: ${{ parameters.appName }}
+            appSettings: '-access_token "$(access-token)" -client_secret "$(client-secret)" -client_token "$(client-token)" -host "$(host)" -WEBSITE_NODE_DEFAULT_VERSION $(WEBSITE-NODE-DEFAULT-VERSION)'
             appType: functionApp
             azureSubscription: ${{ parameters.azureSubscription }}
             package: $(ARTIFACT_PATH)/*.zip
